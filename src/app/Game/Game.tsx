@@ -215,7 +215,7 @@ export const Game = () => {
                     ))}
                 </Styles.Row>
             ))}
-            <Styles.Layer nonInteractive>
+            <Styles.Layer>
                 <Styles.Palac />
                 <Styles.Tron>X</Styles.Tron>
             </Styles.Layer>
