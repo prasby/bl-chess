@@ -1,9 +1,8 @@
 import styled from "styled-components";
 import { Aquedux } from "aquedux";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
+import { BOARD_SIZE } from "src/data/game/domain";
+
 export const CELL_SIZE = 64;
-export const BOARD_SIZE = 9;
 
 export const Board = styled.div`
     position: relative;
