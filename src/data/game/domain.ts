@@ -1,4 +1,4 @@
-import { flatMap } from "lodash";
+import { flatMap, range } from "lodash";
 
 export const RAKIROUKA_STEP = 3;
 
@@ -184,11 +184,13 @@ const kniaz: FigureStrategy = (board, figuresMoved, coord) => {
     const figureId = board[coord.y][coord.x] as string;
     if (!figuresMoved[figureId]) {
         const leftLaddziaId = board[coord.y][0];
-        if (typeof leftLaddziaId === "string" && !figuresMoved[leftLaddziaId]) {
+        const leftPathFree = !range(1, coord.x - 1).find(x => board[coord.y][x] !== 0)
+        if (leftPathFree && typeof leftLaddziaId === "string" && !figuresMoved[leftLaddziaId]) {
             moveMotions.push({ x: coord.x - RAKIROUKA_STEP, y: coord.y });
         }
+        const rightPathFree = !range(coord.x + 1, BOARD_SIZE - 1).find(x => board[coord.y][x] !== 0)
         const rightLaddziaId = board[coord.y][BOARD_SIZE - 1];
-        if (typeof rightLaddziaId === "string" && !figuresMoved[rightLaddziaId]) {
+        if (rightPathFree && typeof rightLaddziaId === "string" && !figuresMoved[rightLaddziaId]) {
             moveMotions.push({ x: coord.x + RAKIROUKA_STEP, y: coord.y });
         }
     }

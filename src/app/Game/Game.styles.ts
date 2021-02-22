@@ -11,20 +11,30 @@ export const Board = styled.div`
 `;
 
 export const Row = styled.div`
+    background-color: transparent;
     display: flex;
     flex-direction: row;
 `;
 
-export const Cell = styled.div<{ white?: boolean, highlight?: boolean }>`
+export interface CellProps { white?: boolean; highlight?: boolean }
+
+export const Cell = styled.div<CellProps>`
     width: ${CELL_SIZE}px;
     height: ${CELL_SIZE}px;
     box-sizing: border-box;
-    border: ${({ highlight }) => highlight && "3px black solid"};
     background-color: ${({ white }) => white === true ? "#AAA" : "#555"};
 `;
 
-export const FigureContainer = styled(Aquedux.div)<{ enabled: boolean }>`
-    pointer-events: ${({ enabled }) => enabled ? "auto" : "none" };
+export const CellHighlight = styled.div<{ highlight?: boolean }>`
+    width: ${CELL_SIZE}px;
+    height: ${CELL_SIZE}px;
+    box-sizing: border-box;
+    background-color: transparent;
+    border: ${({ highlight }) => highlight && "3px red solid"};
+`;
+
+export const FigureContainer = styled(Aquedux.div)<{  }>`
+    pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -33,7 +43,32 @@ export const FigureContainer = styled(Aquedux.div)<{ enabled: boolean }>`
     
 `;
 
-export const Figure = styled.div<{ white: boolean }>`
+export const Palac = styled.div`
+    position: absolute;
+    left: ${CELL_SIZE * 2}px;
+    top: ${CELL_SIZE * 2}px;
+    width: ${CELL_SIZE * 5}px;
+    height: ${CELL_SIZE * 5}px;
+    border: 3px black solid;
+    box-sizing: border-box;
+`;
+
+export const Tron = styled.div`
+    position: absolute;
+    left: ${CELL_SIZE * 4}px;
+    top: ${CELL_SIZE * 4}px;
+    width: ${CELL_SIZE}px;
+    height: ${CELL_SIZE}px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    font-size: 40pt;
+    font-weight: bold;
+    justify-content: space-around;
+`;
+
+export const Figure = styled.div<{ white: boolean; enabled: boolean }>`
+    pointer-events: ${({ enabled }) => enabled ? "auto" : "none" };
     cursor: pointer;
     user-select: none;
     width: ${CELL_SIZE - 10}px;
@@ -51,8 +86,10 @@ export const FigureIcon = styled.div<{ white: boolean }>`
     margin-bottom: 10px;
 `;
 
-export const FiguresLayer = styled.div`
+export const Layer = styled.div`
     position: absolute;
+    pointer-events: none;
     top: 0;
     left: 0;
+    background-color: transparent;
 `;

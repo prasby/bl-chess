@@ -21,6 +21,16 @@ const useDragHandler = (
 ) => {
     const isDown = useRef<boolean>(false);
     const movePosition = useRef<Coordinate>({ x: 0, y: 0});
+    const align = useHandler((e: MouseEvent) => {
+        const motionX = (e.clientX) / Styles.CELL_SIZE;
+        const motionY = (e.clientY) / Styles.CELL_SIZE;
+        movePosition.current = {
+            x: Math.floor(motionX),
+            y: Math.floor(motionY),
+        }
+        positions.x.next(motionX - 0.5);
+        positions.y.next(motionY - 0.5);
+    });
     useEffect(() => {
         const setMouseUp = () => {
             if (isDown.current) {
@@ -34,14 +44,7 @@ const useDragHandler = (
         };
         const move = (e: MouseEvent) => {
             if (isDown.current) {
-                const motionX = (e.clientX) / Styles.CELL_SIZE;
-                const motionY = (e.clientY) / Styles.CELL_SIZE;
-                movePosition.current = {
-                    x: Math.floor(motionX),
-                    y: Math.floor(motionY),
-                }
-                positions.x.next(motionX - 0.5);
-                positions.y.next(motionY - 0.5);
+                align(e);
             }
         };
         document.addEventListener("mouseup", setMouseUp);
@@ -51,9 +54,10 @@ const useDragHandler = (
             document.removeEventListener("mouseup", setMouseUp);
         }
     }, [coordinates]);
-    return useHandler(() => {
+    return useHandler((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         onSuggestRequest(coordinates);
         isDown.current = true;
+        align(event.nativeEvent);
         positions.zIndex.next(1000);
         movePosition.current = {
             x: Math.floor(coordinates.x),
@@ -77,7 +81,6 @@ const Figure = ({ x, y, enabled, cell, onMotionRequest, onSuggestRequest }: Figu
     const onMouseDown = useDragHandler(coordinates, positions, onMotionRequest, onSuggestRequest);
     return (
         <Styles.FigureContainer
-            enabled={enabled}
             style={{
                 top: positions.y.pipe(map(v => `${v * Styles.CELL_SIZE}px`)),
                 left: positions.x.pipe(map(v => `${v * Styles.CELL_SIZE}px`)),
@@ -87,6 +90,7 @@ const Figure = ({ x, y, enabled, cell, onMotionRequest, onSuggestRequest }: Figu
         >
             <Styles.Figure
                 white={white}
+                enabled={enabled}
             >
                 <Styles.FigureIcon white={white}>
                     {figuresToIcons[cell.split("-")[0]]}
@@ -136,20 +140,39 @@ const gameRules = (board: (number | string)[], activeSide: Side, figuresMoved: {
     return { move: motions };
 }
 
+interface CellProps extends Styles.CellProps {
+    onCellSelect(value: number): void;
+    position: number,
+}
+
+const Cell = React.memo((props: CellProps) => {
+    const onClick = useHandler(() => {
+        props.onCellSelect(props.position);
+    });
+    return (
+        <Styles.Cell
+            onClickCapture={onClick}
+            white={props.white}
+            highlight={props.highlight}
+        />
+    )
+});
+
 export const Game = () => {
     const [gameField, setGameField] = useState(defaultGameField);
     const [activeSide, setActiveSide] = useState<Side>("w");
     const [figuresMoved, setFiguresMoved] = useState(defaultMovedFigures);
     const [highlights, setHighlights] = useState<number[]>([]);
     const onSuggestRequest = useHandler((from: Coordinate) => {
-        const figureId = gameField[normalizeCoord(from)] as string;
+        const figureCell = normalizeCoord(from);
+        const figureId = gameField[figureCell] as string;
         if (getSide(figureId) !== activeSide) {
             return;
         }
         const [figureType] = figureId.split("-");
         const rules = figuresToRules[figureType];
         const suggestions = rules(chunk(gameField, BOARD_SIZE), figuresMoved, from);
-        setHighlights(suggestions.map(normalizeCoord));
+        setHighlights([figureCell, ...suggestions.map(normalizeCoord)]);
     })
     const onMotionRequest = useHandler((from: Coordinate, to: Coordinate) => {
         setHighlights([]);
@@ -171,20 +194,44 @@ export const Game = () => {
         setFiguresMoved({ ...figuresMoved, ...justMovedFigures });
         return true;
     });
+    const onCellSelect = useHandler((position: number) => {
+        if (gameField[position] !== 0) {
+            onSuggestRequest(denormalizeCoord(position));
+        } else {
+            setHighlights([]);
+        }
+    });
     return (
         <Styles.Board>
             {times(BOARD_SIZE, (row) => (
                 <Styles.Row key={row}>
                     {times(BOARD_SIZE, (col) => (
-                        <Styles.Cell
+                        <Cell
+                            position={normalizeCoord({ x: col, y: row })}
+                            onCellSelect={onCellSelect}
                             key={row + col}
-                            highlight={highlights.includes(normalizeCoord({ x: col, y: row }))}
                             white={(row + col) % 2 === 0}
                         />
                     ))}
                 </Styles.Row>
             ))}
-            <Styles.FiguresLayer>
+            <Styles.Layer nonInteractive>
+                <Styles.Palac />
+                <Styles.Tron>X</Styles.Tron>
+            </Styles.Layer>
+            <Styles.Layer>
+                {times(BOARD_SIZE, (row) => (
+                    <Styles.Row key={row}>
+                        {times(BOARD_SIZE, (col) => (
+                            <Styles.CellHighlight
+                                key={row + col}
+                                highlight={highlights.includes(normalizeCoord({ x: col, y: row }))}
+                            />
+                        ))}
+                    </Styles.Row>
+                ))} 
+            </Styles.Layer>
+            <Styles.Layer>
                 {gameField.map((cell, i) => {
                     if (typeof cell === "string") {
                         return (
@@ -201,7 +248,7 @@ export const Game = () => {
                     }
                     return null;
                 })}
-            </Styles.FiguresLayer>
+            </Styles.Layer>
         </Styles.Board>
     )
 }
