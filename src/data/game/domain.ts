@@ -86,10 +86,12 @@ const isPieceOfSide = (side: "b" | "w", figure: string | number) => {
 const whiteRatnik: FigureStrategy = (board, figuresMoved, { x, y }) => {
     const positions: Coordinate[] = [];
     const nextY = y + 1;
-    if (board[nextY][x] === 0) {
+    const nextCoord = { x, y: nextY };
+    if (board[nextY][x] === 0 && !isTron(nextCoord)) {
         positions.push({ x, y: nextY });
         const secondNextY = y + 2;
-        if (y === 1 && board[secondNextY][x] === 0) {
+        const secondNextCoord = { x, y: y + 2 };
+        if (y === 1 && board[secondNextY][x] === 0 && !isTron(secondNextCoord)) {
             positions.push({ x, y: secondNextY });
         }
     }
@@ -105,11 +107,12 @@ const whiteRatnik: FigureStrategy = (board, figuresMoved, { x, y }) => {
 const blackRatnik: FigureStrategy = (board, figuresMoved, { x, y }) => {
     const positions: Coordinate[] = [];
     const nextY = y - 1;
-    if (board[nextY][x] === 0) {
+    if (board[nextY][x] === 0 && !isTron({ x, y: nextY })) {
         positions.push({ x, y: nextY });
         const secondNextY = y - 2;
-        if (y === BOARD_SIZE - 2 && board[secondNextY][x] === 0) {
-            positions.push({ x, y: secondNextY });
+        const secondNextCoord = { x, y: secondNextY };
+        if (y === BOARD_SIZE - 2 && board[secondNextY][x] === 0 && !isTron(secondNextCoord)) {
+            positions.push(secondNextCoord);
         }
     }
     if (x > 0 && isPieceOfSide("w", board[nextY][x - 1])) {

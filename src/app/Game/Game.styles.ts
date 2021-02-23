@@ -45,11 +45,11 @@ export const FigureContainer = styled(Aquedux.div)<{  }>`
 
 export const Palac = styled.div`
     position: absolute;
-    left: ${CELL_SIZE * 2}px;
-    top: ${CELL_SIZE * 2}px;
-    width: ${CELL_SIZE * 5}px;
-    height: ${CELL_SIZE * 5}px;
-    border: 3px black solid;
+    left: ${CELL_SIZE * 2 - 1}px;
+    top: ${CELL_SIZE * 2 - 1}px;
+    width: ${CELL_SIZE * 5 + 2}px;
+    height: ${CELL_SIZE * 5 + 2}px;
+    border: 2px black solid;
     box-sizing: border-box;
 `;
 
@@ -65,6 +65,7 @@ export const Tron = styled.div`
     font-size: 40pt;
     font-weight: bold;
     justify-content: space-around;
+    user-select: none;
 `;
 
 export const Figure = styled.div<{ white: boolean; enabled: boolean }>`
@@ -83,6 +84,7 @@ export const Figure = styled.div<{ white: boolean; enabled: boolean }>`
 export const FigureIcon = styled.div<{ white: boolean }>`
     color: ${({ white }) => white ? "black" : "white"};
     font-size: 60px;
+    user-select: none;
     margin-bottom: 10px;
 `;
 

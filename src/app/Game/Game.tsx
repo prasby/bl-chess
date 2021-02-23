@@ -163,7 +163,9 @@ export const Game = () => {
     const [activeSide, setActiveSide] = useState<Side>("w");
     const [figuresMoved, setFiguresMoved] = useState(defaultMovedFigures);
     const [highlights, setHighlights] = useState<number[]>([]);
+    const selectedCell = useRef<number>(-1);
     const onSuggestRequest = useHandler((from: Coordinate) => {
+        selectedCell.current = -1;
         const figureCell = normalizeCoord(from);
         const figureId = gameField[figureCell] as string;
         if (getSide(figureId) !== activeSide) {
@@ -175,6 +177,7 @@ export const Game = () => {
         setHighlights([figureCell, ...suggestions.map(normalizeCoord)]);
     })
     const onMotionRequest = useHandler((from: Coordinate, to: Coordinate) => {
+        selectedCell.current = -1;
         setHighlights([]);
         const result = gameRules(gameField, activeSide, figuresMoved, from, to);
         if (!result) {
@@ -195,9 +198,21 @@ export const Game = () => {
         return true;
     });
     const onCellSelect = useHandler((position: number) => {
+        console.log(">> position: ", position);
+        console.log(">> selectedCell.current: ", selectedCell.current);
+        if (selectedCell.current !== -1) {
+            onMotionRequest(
+                denormalizeCoord(selectedCell.current),
+                denormalizeCoord(position),
+            );
+            return;
+        }
         if (gameField[position] !== 0) {
+            console.log("selectedCell.current:", selectedCell.current);
             onSuggestRequest(denormalizeCoord(position));
+            selectedCell.current = position;
         } else {
+            selectedCell.current = -1;
             setHighlights([]);
         }
     });
