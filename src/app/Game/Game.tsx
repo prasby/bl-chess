@@ -4,7 +4,7 @@ import * as Styles from "./Game.styles";
 import { times, chunk } from "lodash";
 import { BehaviorSubject } from "rxjs";
 import { map } from "rxjs/operators";
-import { BOARD_SIZE, Coordinate, defaultGameField, defaultMovedFigures, figuresToIcons, figuresToRules, getOppositeSide, getSide, isValidDestination, RAKIROUKA_STEP, Side } from "src/data/game/domain";
+import { BOARD_SIZE, Coordinate, defaultGameField, defaultMovedFigures, denormalizeCoord, FiguresMoved, figuresToIcons, figuresToRules, GameField, getOppositeSide, getOutcomes, getSide, isValidDestination, MoveOutcomes, normalizeCoord, RAKIROUKA_STEP, Side } from "src/data/game/domain";
 
 interface FigureProps extends Coordinate {
     cell: string;
@@ -97,33 +97,79 @@ const Figure = ({ x, y, enabled, cell, onMotionRequest, onSuggestRequest }: Figu
                 </Styles.FigureIcon>
             </Styles.Figure>
         </Styles.FigureContainer>
-    )
-}
+    );
+};
 
-const normalizeCoord = ({ x, y }: Coordinate) =>
-    y * BOARD_SIZE + x
+const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, outcomes: MoveOutcomes) => {
+    const newGameField = [...gameField];
+    const justMovedFigures: { [key: string]: boolean } = {};
+    outcomes.motions.forEach((motion) => {
+        const prevPos = normalizeCoord(motion.from);
+        const newPos = normalizeCoord(motion.to);
+        justMovedFigures[gameField[prevPos]] = true;
+        newGameField[newPos] = newGameField[prevPos];
+        newGameField[prevPos] = 0;
+    });
+    return [newGameField, figuresMoved] as const;
+};
 
-const denormalizeCoord = (pos: number): Coordinate => ({
-    x: pos % BOARD_SIZE,
-    y: Math.floor(pos / BOARD_SIZE),
-});
+const getFiguresOf = (gameField: GameField, side: Side): number[] => {
+    const result = [];
+    for (let i = 0; i < gameField.length; i++) {
+        const entry = gameField[i];
+        if (typeof entry === "string" && getSide(entry) === side) {
+            result.push(i);
+        }
+    }
+    return result;
+};
 
-const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: string]: boolean }, from: Coordinate) => {
+const getKniazychOf = (gameField: GameField, side: Side) =>
+    gameField.findIndex(id => id === `${side}kc`);
+
+const getKniazOf = (gameField: GameField, side: Side) =>
+    gameField.findIndex(id => id === `${side}kz`);
+
+const isUnderCheck = (gameField: GameField, figuresMoved: FiguresMoved, side: Side) => {
+    const kniazhychPosition = getKniazychOf(gameField, side);
+    if (kniazhychPosition !== -1) {
+        return false;
+    }
+    const kniazPosition = getKniazOf(gameField, side);
+    if (kniazPosition !== -1) {
+        const oppFigures = getFiguresOf(gameField, getOppositeSide(side));
+        return oppFigures.find(
+            oppPosition => {
+                const oppCoordinate = denormalizeCoord(oppPosition);
+                const oppMotions = getAvailableMotions(gameField, figuresMoved, oppCoordinate, true);
+                return oppMotions.find(motion => {
+                    return normalizeCoord(motion) === kniazPosition;
+                });
+            }
+        )
+    }
+    return false;
+};
+
+const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: string]: boolean }, from: Coordinate, checkAttack: boolean) => {
     const figureId = board[normalizeCoord(from)] as string;
     const denormalizedBoard = chunk(board, BOARD_SIZE);
     const [figureType] = figureId.split("-");
     const rules = figuresToRules[figureType];
-    const availableMotions = rules(denormalizedBoard, figuresMoved, from, false);
-    availableMotions.filter(motion => {
-        const newBoard = [];
-        return [from, motion];
-    })
-    return availableMotions;
+    const availableMotions = rules(denormalizedBoard, figuresMoved, from, checkAttack);
+    return checkAttack ?
+        availableMotions :
+        availableMotions.filter(to => {
+            const [newGameField, newFiguresMoved] = processOutcomes(board, figuresMoved, getOutcomes(board, from, to));
+            if (isUnderCheck(newGameField, newFiguresMoved, getSide(figureId))) {
+                return false;
+            }
+            return true;
+        });
 };
 
 const gameRules = (board: (number | string)[], activeSide: Side, figuresMoved: { [key: string]: boolean }, from: Coordinate, to: Coordinate) => {
     const figureId = board[normalizeCoord(from)] as string;
-    const [figureType] = figureId.split("-");
     const side = getSide(figureId);
     if (side !== activeSide) {
         return false;
@@ -135,21 +181,11 @@ const gameRules = (board: (number | string)[], activeSide: Side, figuresMoved: {
     if (!isValidDestination(side, denormalizedBoard, to)) {
         return false;
     }
-    const availableMotions = getAvailableMotions(board, figuresMoved, from);
+    const availableMotions = getAvailableMotions(board, figuresMoved, from, false);
     if (!availableMotions.find(({ x, y }) => x === to.x && y === to.y)) {
         return false;
     }
-    const motions = [{ from, to }];
-    const dx = to.x - from.x;
-    // rakirouka
-    if (["bkz", "wkz"].includes(figureType) && Math.abs(dx) === RAKIROUKA_STEP) {
-        const laddziaX = dx > 0 ? BOARD_SIZE - 1 : 0;
-        motions.push({
-            from: { x: laddziaX, y: from.y },
-            to: { x: laddziaX + (dx > 0 ? -2 : 2), y: from.y },
-        });
-    }
-    return { move: motions };
+    return getOutcomes(board, from, to);
 }
 
 interface CellProps extends Styles.CellProps {
@@ -185,7 +221,7 @@ export const Game = () => {
         }
         const [figureType] = figureId.split("-");
         const rules = figuresToRules[figureType];
-        const suggestions = rules(chunk(gameField, BOARD_SIZE), figuresMoved, from, false);
+        const suggestions = getAvailableMotions(gameField, figuresMoved, from, false);
         setHighlights([figureCell, ...suggestions.map(normalizeCoord)]);
     })
     const onMotionRequest = useHandler((from: Coordinate, to: Coordinate) => {
@@ -195,15 +231,7 @@ export const Game = () => {
         if (!result) {
             return false;
         }
-        const newGameField = [...gameField];
-        const justMovedFigures: { [key: string]: boolean } = {};
-        result.move.forEach((motion) => {
-            const prevPos = normalizeCoord(motion.from);
-            const newPos = normalizeCoord(motion.to);
-            justMovedFigures[gameField[prevPos]] = true;
-            newGameField[newPos] = newGameField[prevPos];
-            newGameField[prevPos] = 0;
-        });
+        const [newGameField, justMovedFigures] = processOutcomes(gameField, figuresMoved, result);
         setGameField(newGameField);
         setActiveSide(getOppositeSide(activeSide));
         setFiguresMoved({ ...figuresMoved, ...justMovedFigures });

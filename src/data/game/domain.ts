@@ -49,6 +49,19 @@ export const tronTest = flatMap([
     ["bl-1", "bg-1", "bv-1", "bkc", "bkz", "bgt", "bv-2", "bg-2", "bl-2"],
 ]);
 
+export const checkTest = flatMap([
+    [0, 0, 0, "bv-1", 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    // [0, 0, 0, "wkz", 0, 0, 0, 0, 0],
+    [0, "wkz", 0, 0, 0, 0, "bl-1", 0, 0],
+    ["br-1", 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, "bg-1", "bg-2", 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, "bkz"],
+]);
+
 export const normalGame = flatMap([
     ["wl-1", "wg-1", "wv-1", "wkc", "wkz", "wgt", "wv-2", "wg-2", "wl-2"],
     // ["wl-1", 0, 0, 0, "wkz", 0, 0, 0, "wl-2"],
@@ -63,9 +76,48 @@ export const normalGame = flatMap([
     // ["bl-1", 0, 0, 0, "bkz", 0, 0, 0, "bl-2"],
 ]);
 
-export const defaultGameField = tronTest;
+export interface MoveOutcomes {
+    motions: { from: Coordinate; to: Coordinate }[];
+    beatenFields: Coordinate[];
+}
 
-export const defaultMovedFigures: { [key: string]: boolean } = {};
+export type GameField = (number | string)[];
+
+export const normalizeCoord = ({ x, y }: Coordinate) =>
+    y * BOARD_SIZE + x
+
+export const denormalizeCoord = (pos: number): Coordinate => ({
+    x: pos % BOARD_SIZE,
+    y: Math.floor(pos / BOARD_SIZE),
+});
+
+
+export const getOutcomes = (board: GameField, from: Coordinate, to: Coordinate): MoveOutcomes => {
+    const figureId = board[normalizeCoord(from)] as string;
+    const [figureType] = figureId.split("-");
+    const motions = [{ from, to }];
+    const beatenFields: Coordinate[] = [];
+    const dx = to.x - from.x;
+    // rakirouka
+    if (["bkz", "wkz"].includes(figureType) && Math.abs(dx) === RAKIROUKA_STEP) {
+        const laddziaX = dx > 0 ? BOARD_SIZE - 1 : 0;
+        const beatStep = dx > 0 ? 1 : -1;
+        for (let bx = from.x + beatStep; bx !== to.x - beatStep; bx += beatStep) {
+            beatenFields.push({ y: from.y, x: bx });
+        }
+        motions.push({
+            from: { x: laddziaX, y: from.y },
+            to: { x: laddziaX + (dx > 0 ? -2 : 2), y: from.y },
+        });
+    }
+    return { motions, beatenFields };
+};
+
+
+export const defaultGameField = checkTest;
+
+export type FiguresMoved = { [key: string]: boolean };
+export const defaultMovedFigures: FiguresMoved = {};
 
 export type Side = "b" | "w";
 
@@ -144,7 +196,7 @@ export const isValidDestination = (side: Side, board: (number | string)[][], { x
     return board[y][x] === 0 || (getSide(board[y][x] as string) !== side);
 };
 
-const moveInDirection = (board: (string | number)[][], side: Side, { x, y }: Coordinate, mX: number, mY: number, tronPolicy: TronPolicy, limit = -1) => {
+const moveInDirection = (board: (string | number)[][], side: Side, { x, y }: Coordinate, mX: number, mY: number, tronPolicy: TronPolicy, limit = -1, checkAttack: boolean = false) => {
     const positions: Coordinate[] = [];
     for (let i = 1; limit === -1 || i <= limit; i++) {
         const dX = i * mX;
@@ -153,6 +205,9 @@ const moveInDirection = (board: (string | number)[][], side: Side, { x, y }: Coo
         if (isTron(dest)) {
             // switch-case overrides `break`, do not refactor :)
             if (tronPolicy === TronPolicy.BLOCK) {
+                if (checkAttack) {
+                    positions.push(dest);
+                }
                 break;
             }
             if (tronPolicy === TronPolicy.SKIP) {
@@ -171,23 +226,25 @@ const moveInDirection = (board: (string | number)[][], side: Side, { x, y }: Coo
 }
 
 const garmata = (limit: number = -1, tronPolicy: TronPolicy = TronPolicy.BLOCK): FigureStrategy =>
-    (board, figuresMoved, coord) => {
+    (board, figuresMoved, coord, checkAttack) => {
         const side = getSide(board[coord.y][coord.x] as string);
         return [
-            ...moveInDirection(board, side, coord, -1, -1, tronPolicy, limit),
-            ...moveInDirection(board, side, coord, -1, 1, tronPolicy, limit),
-            ...moveInDirection(board, side, coord, 1, -1, tronPolicy, limit),
-            ...moveInDirection(board, side, coord, 1, 1, tronPolicy, limit),
+            ...moveInDirection(board, side, coord, -1, -1, tronPolicy, limit, checkAttack),
+            ...moveInDirection(board, side, coord, -1, 1, tronPolicy, limit, checkAttack),
+            ...moveInDirection(board, side, coord, 1, -1, tronPolicy, limit, checkAttack),
+            ...moveInDirection(board, side, coord, 1, 1, tronPolicy, limit, checkAttack),
         ];
     };
 
-const vaukalak: FigureStrategy = (board, figuresMoved, { x, y }) => {
+const vaukalak: FigureStrategy = (board, figuresMoved, { x, y }, checkAttack) => {
     const positions: Coordinate[] = [];
     const side = getSide(board[y][x] as string);
     const addIfValid = (dx: number, dy: number) => {
         const destination = { x: x - dx, y: y - dy };
-        if (isValidDestination(side, board, destination) && !isTron(destination)) {
-            positions.push(destination);
+        if (isValidDestination(side, board, destination)) {
+            if (!isTron(destination) || checkAttack) {
+                positions.push(destination);
+            }
         }
     }
     addIfValid(1, 2);
@@ -202,13 +259,13 @@ const vaukalak: FigureStrategy = (board, figuresMoved, { x, y }) => {
 };
 
 const laddzia = (limit: number = -1, tronPolicy: TronPolicy = TronPolicy.BLOCK): FigureStrategy =>
-    (board, figuresMoved, coord) => {
+    (board, figuresMoved, coord, checkAttack) => {
         const side = getSide(board[coord.y][coord.x] as string);
         return [
-            ...moveInDirection(board, side, coord, 0, -1, tronPolicy, limit),
-            ...moveInDirection(board, side, coord, 0, 1, tronPolicy, limit),
-            ...moveInDirection(board, side, coord, -1, 0, tronPolicy, limit),
-            ...moveInDirection(board, side, coord, 1, 0, tronPolicy, limit),
+            ...moveInDirection(board, side, coord, 0, -1, tronPolicy, limit, checkAttack),
+            ...moveInDirection(board, side, coord, 0, 1, tronPolicy, limit, checkAttack),
+            ...moveInDirection(board, side, coord, -1, 0, tronPolicy, limit, checkAttack),
+            ...moveInDirection(board, side, coord, 1, 0, tronPolicy, limit, checkAttack),
         ];
     };
 
