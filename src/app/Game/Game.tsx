@@ -108,22 +108,34 @@ const denormalizeCoord = (pos: number): Coordinate => ({
     y: Math.floor(pos / BOARD_SIZE),
 });
 
+const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: string]: boolean }, from: Coordinate) => {
+    const figureId = board[normalizeCoord(from)] as string;
+    const denormalizedBoard = chunk(board, BOARD_SIZE);
+    const [figureType] = figureId.split("-");
+    const rules = figuresToRules[figureType];
+    const availableMotions = rules(denormalizedBoard, figuresMoved, from, false);
+    availableMotions.filter(motion => {
+        const newBoard = [];
+        return [from, motion];
+    })
+    return availableMotions;
+};
+
 const gameRules = (board: (number | string)[], activeSide: Side, figuresMoved: { [key: string]: boolean }, from: Coordinate, to: Coordinate) => {
     const figureId = board[normalizeCoord(from)] as string;
+    const [figureType] = figureId.split("-");
     const side = getSide(figureId);
     if (side !== activeSide) {
+        return false;
+    }
+    if (from.x === to.x && from.y === to.y) {
         return false;
     }
     const denormalizedBoard = chunk(board, BOARD_SIZE);
     if (!isValidDestination(side, denormalizedBoard, to)) {
         return false;
     }
-    if (from.x === to.x && from.y === to.y) {
-        return false;
-    }
-    const [figureType] = figureId.split("-");
-    const rules = figuresToRules[figureType];
-    const availableMotions = rules(denormalizedBoard, figuresMoved, from);
+    const availableMotions = getAvailableMotions(board, figuresMoved, from);
     if (!availableMotions.find(({ x, y }) => x === to.x && y === to.y)) {
         return false;
     }
@@ -173,7 +185,7 @@ export const Game = () => {
         }
         const [figureType] = figureId.split("-");
         const rules = figuresToRules[figureType];
-        const suggestions = rules(chunk(gameField, BOARD_SIZE), figuresMoved, from);
+        const suggestions = rules(chunk(gameField, BOARD_SIZE), figuresMoved, from, false);
         setHighlights([figureCell, ...suggestions.map(normalizeCoord)]);
     })
     const onMotionRequest = useHandler((from: Coordinate, to: Coordinate) => {
@@ -198,8 +210,6 @@ export const Game = () => {
         return true;
     });
     const onCellSelect = useHandler((position: number) => {
-        console.log(">> position: ", position);
-        console.log(">> selectedCell.current: ", selectedCell.current);
         if (selectedCell.current !== -1) {
             onMotionRequest(
                 denormalizeCoord(selectedCell.current),
@@ -208,7 +218,6 @@ export const Game = () => {
             return;
         }
         if (gameField[position] !== 0) {
-            console.log("selectedCell.current:", selectedCell.current);
             onSuggestRequest(denormalizeCoord(position));
             selectedCell.current = position;
         } else {

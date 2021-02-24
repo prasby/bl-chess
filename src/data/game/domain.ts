@@ -13,7 +13,8 @@ export interface Coordinate {
 export type FigureStrategy = (
     board: (number | string)[][],
     figuresMoved: { [key: string]: boolean },
-    from: Coordinate
+    from: Coordinate,
+    checkAttack: boolean,
 ) => Coordinate[];
 
 export const TRON_POSITION = 4;
@@ -130,6 +131,7 @@ enum TronPolicy {
     STEP,
     SKIP,
     BLOCK,
+    ATTACK,
 }
 
 export const isTron = ({ x, y }: Coordinate) =>
@@ -168,15 +170,16 @@ const moveInDirection = (board: (string | number)[][], side: Side, { x, y }: Coo
     return positions;
 }
 
-const garmata = (limit: number = -1, tronPolicy: TronPolicy = TronPolicy.BLOCK): FigureStrategy => (board, figuresMoved, coord) => {
-    const side = getSide(board[coord.y][coord.x] as string);
-    return [
-        ...moveInDirection(board, side, coord, -1, -1, tronPolicy, limit),
-        ...moveInDirection(board, side, coord, -1, 1, tronPolicy, limit),
-        ...moveInDirection(board, side, coord, 1, -1, tronPolicy, limit),
-        ...moveInDirection(board, side, coord, 1, 1, tronPolicy, limit),
-    ];
-};
+const garmata = (limit: number = -1, tronPolicy: TronPolicy = TronPolicy.BLOCK): FigureStrategy =>
+    (board, figuresMoved, coord) => {
+        const side = getSide(board[coord.y][coord.x] as string);
+        return [
+            ...moveInDirection(board, side, coord, -1, -1, tronPolicy, limit),
+            ...moveInDirection(board, side, coord, -1, 1, tronPolicy, limit),
+            ...moveInDirection(board, side, coord, 1, -1, tronPolicy, limit),
+            ...moveInDirection(board, side, coord, 1, 1, tronPolicy, limit),
+        ];
+    };
 
 const vaukalak: FigureStrategy = (board, figuresMoved, { x, y }) => {
     const positions: Coordinate[] = [];
@@ -198,27 +201,28 @@ const vaukalak: FigureStrategy = (board, figuresMoved, { x, y }) => {
     return positions;
 };
 
-const laddzia = (limit: number = -1, tronPolicy: TronPolicy = TronPolicy.BLOCK): FigureStrategy => (board, figuresMoved, coord) => {
-    const side = getSide(board[coord.y][coord.x] as string);
+const laddzia = (limit: number = -1, tronPolicy: TronPolicy = TronPolicy.BLOCK): FigureStrategy =>
+    (board, figuresMoved, coord) => {
+        const side = getSide(board[coord.y][coord.x] as string);
+        return [
+            ...moveInDirection(board, side, coord, 0, -1, tronPolicy, limit),
+            ...moveInDirection(board, side, coord, 0, 1, tronPolicy, limit),
+            ...moveInDirection(board, side, coord, -1, 0, tronPolicy, limit),
+            ...moveInDirection(board, side, coord, 1, 0, tronPolicy, limit),
+        ];
+    };
+
+const getman: FigureStrategy = (board, figuresMoved, coord, checkAttack) => {
     return [
-        ...moveInDirection(board, side, coord, 0, -1, tronPolicy, limit),
-        ...moveInDirection(board, side, coord, 0, 1, tronPolicy, limit),
-        ...moveInDirection(board, side, coord, -1, 0, tronPolicy, limit),
-        ...moveInDirection(board, side, coord, 1, 0, tronPolicy, limit),
+        ...laddzia()(board, figuresMoved, coord, checkAttack),
+        ...garmata()(board, figuresMoved, coord, checkAttack),
     ];
 };
 
-const getman: FigureStrategy = (board, figuresMoved, coord) => {
-    return [
-        ...laddzia()(board, figuresMoved, coord),
-        ...garmata()(board, figuresMoved, coord),
-    ];
-};
-
-const kniaz: FigureStrategy = (board, figuresMoved, coord) => {
+const kniaz: FigureStrategy = (board, figuresMoved, coord, checkAttack) => {
     const moveMotions = [
-        ...laddzia(1, TronPolicy.STEP)(board, figuresMoved, coord),
-        ...garmata(1, TronPolicy.STEP)(board, figuresMoved, coord),
+        ...laddzia(1, TronPolicy.STEP)(board, figuresMoved, coord, checkAttack),
+        ...garmata(1, TronPolicy.STEP)(board, figuresMoved, coord, checkAttack),
     ];
     const figureId = board[coord.y][coord.x] as string;
     if (!figuresMoved[figureId]) {
@@ -236,7 +240,7 @@ const kniaz: FigureStrategy = (board, figuresMoved, coord) => {
     return moveMotions;
 };
 
-const kniazhych: FigureStrategy = (board, figuresMoved, coord) => {
+const kniazhych: FigureStrategy = (board, figuresMoved, coord, checkAttack) => {
     const side = getSide(board[coord.y][coord.x] as string);
     let kniazInPalac = false;
     for (let i = 2; i < 7; i++) {
@@ -249,8 +253,8 @@ const kniazhych: FigureStrategy = (board, figuresMoved, coord) => {
     }
     const tronPolicy = kniazInPalac ? TronPolicy.STEP : TronPolicy.SKIP;
     return [
-        ...laddzia(2, tronPolicy)(board, figuresMoved, coord),
-        ...garmata(2, tronPolicy)(board, figuresMoved, coord),
+        ...laddzia(2, tronPolicy)(board, figuresMoved, coord, checkAttack),
+        ...garmata(2, tronPolicy)(board, figuresMoved, coord, checkAttack),
     ];
 };
 
