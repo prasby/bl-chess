@@ -63,6 +63,9 @@ export const checkTest = flatMap([
     [0, 0, 0, 0, 0, 0, 0, 0, "bkz"],
 ]);
 
+export const rakiroukaTest = ["wl-1",0,0,0,"wkz",0,"wv-2","wg-2","wl-2","wr-1",0,0,0,"wr-5","wr-6",0,"wr-8","wr-9",0,0,0,"wv-1",0,0,0,0,0,0,"wr-2","wr-3","wr-4","wg-1",0,"wr-7",0,0,0,0,0,0,0,0,"bv-2",0,0,0,"br-2","br-3","br-4","bg-1",0,0,0,0,0,"wkc",0,"bv-1",0,0,"wgt","br-8",0,"br-1",0,0,0,"br-5","br-6",0,0,"br-9","bl-1",0,0,0,"bkz",0,0,0,"bl-2"];
+export const karanacyjaTest = ["wl-1","wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wr-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9",0,0,0,0,0,0,0,0,0,0,0,0,"wgt","wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"bkz",0,0,0,0,0,0,0,0,0,"br-5",0,0,0,0,"br-1","br-2","br-3","br-4",0,"br-6","br-7","br-8","br-9","bl-1","bg-1","bv-1","bkc",0,"bgt","bv-2","bg-2","bl-2"];
+
 export const normalGame = flatMap([
     ["wl-1", "wg-1", "wv-1", "wkc", "wkz", "wgt", "wv-2", "wg-2", "wl-2"],
     // ["wl-1", 0, 0, 0, "wkz", 0, 0, 0, "wl-2"],
@@ -77,8 +80,11 @@ export const normalGame = flatMap([
     // ["bl-1", 0, 0, 0, "bkz", 0, 0, 0, "bl-2"],
 ]);
 
+type Motion = { from: Coordinate; to: Coordinate };
+type Transformation = { position: Coordinate; toId: string };
+
 export interface MoveOutcomes {
-    motions: { from: Coordinate; to: Coordinate }[];
+    motions: Motion[];
     beatenFields: Coordinate[];
 }
 
@@ -93,6 +99,12 @@ export const denormalizeCoord = (pos: number): Coordinate => ({
 });
 
 
+export const getKniazychOf = (gameField: GameField, side: Side) =>
+    gameField.findIndex(id => id === `${side}kc`);
+
+export const getKniazOf = (gameField: GameField, side: Side) =>
+    gameField.findIndex(id => id === `${side}kz`);
+
 export const getOutcomes = (board: GameField, from: Coordinate, to: Coordinate): MoveOutcomes => {
     const figureId = board[normalizeCoord(from)] as string;
     const [figureType] = figureId.split("-");
@@ -103,7 +115,7 @@ export const getOutcomes = (board: GameField, from: Coordinate, to: Coordinate):
     if (["bkz", "wkz"].includes(figureType) && Math.abs(dx) === RAKIROUKA_STEP) {
         const laddziaX = dx > 0 ? BOARD_SIZE - 1 : 0;
         const beatStep = dx > 0 ? 1 : -1;
-        for (let bx = from.x + beatStep; bx !== to.x - beatStep; bx += beatStep) {
+        for (let bx = from.x; bx !== to.x; bx += beatStep) {
             beatenFields.push({ y: from.y, x: bx });
         }
         motions.push({
@@ -283,7 +295,8 @@ const kniaz: FigureStrategy = (board, figuresMoved, coord, checkAttack) => {
         ...garmata(1, TronPolicy.STEP)(board, figuresMoved, coord, checkAttack),
     ];
     const figureId = board[coord.y][coord.x] as string;
-    if (!figuresMoved[figureId]) {
+    // we check position cause knizhych might be promoted
+    if (!figuresMoved[figureId] && coord.x === TRON_ROW) {
         const leftLaddziaId = board[coord.y][0];
         const leftPathFree = !range(1, coord.x - 1).find(x => board[coord.y][x] !== 0)
         if (leftPathFree && typeof leftLaddziaId === "string" && !figuresMoved[leftLaddziaId]) {

@@ -4,7 +4,7 @@ import * as Styles from "./Game.styles";
 import { times, chunk } from "lodash";
 import { BehaviorSubject } from "rxjs";
 import { map } from "rxjs/operators";
-import { BOARD_SIZE, Coordinate, defaultGameField, defaultMovedFigures, denormalizeCoord, FiguresMoved, figuresToIcons, figuresToRules, GameField, getOppositeSide, getOutcomes, getSide, isValidDestination, MoveOutcomes, normalizeCoord, RAKIROUKA_STEP, Side, TRON_POSITION, TRON_ROW } from "src/data/game/domain";
+import { BOARD_SIZE, Coordinate, defaultGameField, defaultMovedFigures, denormalizeCoord, FiguresMoved, figuresToIcons, figuresToRules, GameField, getKniazOf, getKniazychOf, getOppositeSide, getOutcomes, getSide, isValidDestination, MoveOutcomes, normalizeCoord, RAKIROUKA_STEP, Side, TRON_POSITION } from "src/data/game/domain";
 
 interface FigureProps extends Coordinate {
     cell: string;
@@ -100,7 +100,7 @@ const Figure = ({ x, y, enabled, cell, onMotionRequest, onSuggestRequest }: Figu
     );
 };
 
-const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, outcomes: MoveOutcomes) => {
+const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, figureId: string, outcomes: MoveOutcomes) => {
     const newGameField = [...gameField];
     const justMovedFigures: { [key: string]: boolean } = {};
     outcomes.motions.forEach((motion) => {
@@ -110,6 +110,12 @@ const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, outco
         newGameField[newPos] = newGameField[prevPos];
         newGameField[prevPos] = 0;
     });
+    const oppositeSide = getOppositeSide(getSide(figureId));
+    const kniazPosition = getKniazOf(newGameField, oppositeSide);
+    if (kniazPosition === -1) {
+        const position = getKniazychOf(newGameField, oppositeSide);
+        newGameField[position] = `${oppositeSide}kz`;
+    }
     return [newGameField, figuresMoved] as const;
 };
 
@@ -123,12 +129,6 @@ const getFiguresOf = (gameField: GameField, side: Side): number[] => {
     }
     return result;
 };
-
-const getKniazychOf = (gameField: GameField, side: Side) =>
-    gameField.findIndex(id => id === `${side}kc`);
-
-const getKniazOf = (gameField: GameField, side: Side) =>
-    gameField.findIndex(id => id === `${side}kz`);
 
 const isPositionAttacked = (gameField: GameField, figuresMoved: FiguresMoved, side: Side, position: number) => {
     if (position !== -1) {
@@ -173,10 +173,18 @@ const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: s
     return checkAttack ?
         availableMotions :
         availableMotions.filter(to => {
-            const [newGameField, newFiguresMoved] = processOutcomes(board, figuresMoved, getOutcomes(board, from, to));
-            const underCheck = isUnderCheck(newGameField, newFiguresMoved, getSide(figureId));
-            const underRokash = isUnderRokash(newGameField, newFiguresMoved, getSide(figureId));
-            if (underCheck || underRokash) {
+            const outcomes = getOutcomes(board, from, to);
+            const invalidRakirouka = outcomes.beatenFields.find((coord) => {
+                return isPositionAttacked(board, figuresMoved, getSide(figureId), normalizeCoord(coord));
+            })
+            if (invalidRakirouka) {
+                return false;
+            }
+            const [newGameField, newFiguresMoved] = processOutcomes(board, figuresMoved, figureId, outcomes);
+            const activeSide = getSide(figureId);
+            const underCheck = isUnderCheck(newGameField, newFiguresMoved, activeSide);
+            const underRokash = isUnderRokash(newGameField, newFiguresMoved, activeSide);
+            if (underCheck || underRokash || getKniazOf(newGameField, activeSide) === -1) {
                 return false;
             }
             return true;
@@ -256,7 +264,8 @@ export const Game = () => {
         if (!result) {
             return false;
         }
-        const [newGameField, justMovedFigures] = processOutcomes(gameField, figuresMoved, result);
+        const figureId = gameField[normalizeCoord(from)];
+        const [newGameField, justMovedFigures] = processOutcomes(gameField, figuresMoved, figureId, result);
         setGameField(newGameField);
         setActiveSide(getOppositeSide(activeSide));
         setFiguresMoved({ ...figuresMoved, ...justMovedFigures });
