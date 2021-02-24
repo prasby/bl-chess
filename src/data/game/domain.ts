@@ -17,7 +17,8 @@ export type FigureStrategy = (
     checkAttack: boolean,
 ) => Coordinate[];
 
-export const TRON_POSITION = 4;
+export const TRON_ROW = 4;
+export const TRON_POSITION = TRON_ROW * BOARD_SIZE + TRON_ROW;
 
 export const figuresToIcons: { [key: string]: string } = {
     wr: "\u2659",
@@ -187,7 +188,7 @@ enum TronPolicy {
 }
 
 export const isTron = ({ x, y }: Coordinate) =>
-    x === TRON_POSITION && y === TRON_POSITION;
+    x === TRON_ROW && y === TRON_ROW;
 
 export const isValidDestination = (side: Side, board: (number | string)[][], { x, y }: Coordinate) => {
     if (!(inBounds(x) && inBounds(y))) {

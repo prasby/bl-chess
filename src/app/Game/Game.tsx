@@ -4,7 +4,7 @@ import * as Styles from "./Game.styles";
 import { times, chunk } from "lodash";
 import { BehaviorSubject } from "rxjs";
 import { map } from "rxjs/operators";
-import { BOARD_SIZE, Coordinate, defaultGameField, defaultMovedFigures, denormalizeCoord, FiguresMoved, figuresToIcons, figuresToRules, GameField, getOppositeSide, getOutcomes, getSide, isValidDestination, MoveOutcomes, normalizeCoord, RAKIROUKA_STEP, Side } from "src/data/game/domain";
+import { BOARD_SIZE, Coordinate, defaultGameField, defaultMovedFigures, denormalizeCoord, FiguresMoved, figuresToIcons, figuresToRules, GameField, getOppositeSide, getOutcomes, getSide, isValidDestination, MoveOutcomes, normalizeCoord, RAKIROUKA_STEP, Side, TRON_POSITION, TRON_ROW } from "src/data/game/domain";
 
 interface FigureProps extends Coordinate {
     cell: string;
@@ -130,25 +130,38 @@ const getKniazychOf = (gameField: GameField, side: Side) =>
 const getKniazOf = (gameField: GameField, side: Side) =>
     gameField.findIndex(id => id === `${side}kz`);
 
-const isUnderCheck = (gameField: GameField, figuresMoved: FiguresMoved, side: Side) => {
-    const kniazhychPosition = getKniazychOf(gameField, side);
-    if (kniazhychPosition !== -1) {
-        return false;
-    }
-    const kniazPosition = getKniazOf(gameField, side);
-    if (kniazPosition !== -1) {
+const isPositionAttacked = (gameField: GameField, figuresMoved: FiguresMoved, side: Side, position: number) => {
+    if (position !== -1) {
         const oppFigures = getFiguresOf(gameField, getOppositeSide(side));
         return oppFigures.find(
             oppPosition => {
                 const oppCoordinate = denormalizeCoord(oppPosition);
                 const oppMotions = getAvailableMotions(gameField, figuresMoved, oppCoordinate, true);
                 return oppMotions.find(motion => {
-                    return normalizeCoord(motion) === kniazPosition;
+                    return normalizeCoord(motion) === position;
                 });
             }
         )
     }
     return false;
+}
+
+const isUnderRokash = (gameField: GameField, figuresMoved: FiguresMoved, side: Side) => {
+    const tronValue = gameField[TRON_POSITION];
+    if (typeof tronValue !== "string") {
+        return false;
+    }
+    return getSide(tronValue) === side &&
+        isPositionAttacked(gameField, figuresMoved, side, TRON_POSITION);
+};
+
+const isUnderCheck = (gameField: GameField, figuresMoved: FiguresMoved, side: Side) => {
+    const kniazhychPosition = getKniazychOf(gameField, side);
+    if (kniazhychPosition !== -1) {
+        return false;
+    }
+    const kniazPosition = getKniazOf(gameField, side);
+    return isPositionAttacked(gameField, figuresMoved, side, kniazPosition);
 };
 
 const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: string]: boolean }, from: Coordinate, checkAttack: boolean) => {
@@ -161,7 +174,9 @@ const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: s
         availableMotions :
         availableMotions.filter(to => {
             const [newGameField, newFiguresMoved] = processOutcomes(board, figuresMoved, getOutcomes(board, from, to));
-            if (isUnderCheck(newGameField, newFiguresMoved, getSide(figureId))) {
+            const underCheck = isUnderCheck(newGameField, newFiguresMoved, getSide(figureId));
+            const underRokash = isUnderRokash(newGameField, newFiguresMoved, getSide(figureId));
+            if (underCheck || underRokash) {
                 return false;
             }
             return true;
