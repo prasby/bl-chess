@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useHandler } from "react-use-handler";
 import * as Styles from "./Game.styles";
 import { times, chunk } from "lodash";
@@ -207,10 +207,20 @@ const Cell = React.memo((props: CellProps) => {
 });
 
 export const Game = () => {
+    const [loadedField, setLoadedField] = useState<string>("");
     const [gameField, setGameField] = useState(defaultGameField);
     const [activeSide, setActiveSide] = useState<Side>("w");
     const [figuresMoved, setFiguresMoved] = useState(defaultMovedFigures);
     const [highlights, setHighlights] = useState<number[]>([]);
+    const onLoadedFieldChange = useHandler((e: ChangeEvent<HTMLInputElement>) => {
+        setLoadedField(e.target.value);
+    });
+    const resetGame = useHandler(() => {
+        setHighlights([]);
+        setGameField(JSON.parse(loadedField!));
+        setFiguresMoved({});
+        setActiveSide("w");
+    });
     const selectedCell = useRef<number>(-1);
     const onSuggestRequest = useHandler((from: Coordinate) => {
         selectedCell.current = -1;
@@ -254,53 +264,62 @@ export const Game = () => {
         }
     });
     return (
-        <Styles.Board>
-            {times(BOARD_SIZE, (row) => (
-                <Styles.Row key={row}>
-                    {times(BOARD_SIZE, (col) => (
-                        <Cell
-                            position={normalizeCoord({ x: col, y: row })}
-                            onCellSelect={onCellSelect}
-                            key={row + col}
-                            white={(row + col) % 2 === 0}
-                        />
-                    ))}
-                </Styles.Row>
-            ))}
-            <Styles.Layer>
-                <Styles.Palac />
-                <Styles.Tron>X</Styles.Tron>
-            </Styles.Layer>
-            <Styles.Layer>
+        <div>
+
+            <Styles.Board>
                 {times(BOARD_SIZE, (row) => (
                     <Styles.Row key={row}>
                         {times(BOARD_SIZE, (col) => (
-                            <Styles.CellHighlight
+                            <Cell
+                                position={normalizeCoord({ x: col, y: row })}
+                                onCellSelect={onCellSelect}
                                 key={row + col}
-                                highlight={highlights.includes(normalizeCoord({ x: col, y: row }))}
+                                white={(row + col) % 2 === 0}
                             />
                         ))}
                     </Styles.Row>
-                ))} 
-            </Styles.Layer>
-            <Styles.Layer>
-                {gameField.map((cell, i) => {
-                    if (typeof cell === "string") {
-                        return (
-                            <Figure
-                              enabled={getSide(cell) === activeSide}
-                              onSuggestRequest={onSuggestRequest}
-                              onMotionRequest={onMotionRequest}
-                              key={cell}
-                              cell={cell}
-                              {...denormalizeCoord(i)}
-                            />
-                        )
-                        
-                    }
-                    return null;
-                })}
-            </Styles.Layer>
-        </Styles.Board>
+                ))}
+                <Styles.Layer>
+                    <Styles.Palac />
+                    <Styles.Tron>X</Styles.Tron>
+                </Styles.Layer>
+                <Styles.Layer>
+                    {times(BOARD_SIZE, (row) => (
+                        <Styles.Row key={row}>
+                            {times(BOARD_SIZE, (col) => (
+                                <Styles.CellHighlight
+                                    key={row + col}
+                                    highlight={highlights.includes(normalizeCoord({ x: col, y: row }))}
+                                />
+                            ))}
+                        </Styles.Row>
+                    ))} 
+                </Styles.Layer>
+                <Styles.Layer>
+                    {gameField.map((cell, i) => {
+                        if (typeof cell === "string") {
+                            return (
+                                <Figure
+                                enabled={getSide(cell) === activeSide}
+                                onSuggestRequest={onSuggestRequest}
+                                onMotionRequest={onMotionRequest}
+                                key={cell}
+                                cell={cell}
+                                {...denormalizeCoord(i)}
+                                />
+                            )
+                            
+                        }
+                        return null;
+                    })}
+                </Styles.Layer>
+            </Styles.Board>
+            <div>
+                LOAD GAME
+                <input onChange={onLoadedFieldChange} value={loadedField} />
+                <button onClick={() => { resetGame(); }} >RESET</button>
+            </div>
+            <button onClick={() => { console.log(`GAMEFIELD: ${JSON.stringify(gameField)}`); }} >PRINT</button>
+        </div>
     )
 }
