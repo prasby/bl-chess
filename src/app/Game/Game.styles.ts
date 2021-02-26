@@ -3,11 +3,71 @@ import { Aquedux } from "aquedux";
 import { BOARD_SIZE } from "src/data/game/domain";
 
 export const CELL_SIZE = 64;
+export const LEGEND_SIZE = 30;
+export const MAX_GAME_SIZE = BOARD_SIZE * CELL_SIZE + LEGEND_SIZE * 2;
+
+export interface Theme {
+    gameSize: number;
+}
+
+export const scaleValue = (theme: Theme, value: number, ceil = false) => {
+    const scaled = theme.gameSize / MAX_GAME_SIZE * value;
+    return ceil ? Math.ceil(scaled) : scaled;
+}
+
+const createScaled = (value: number, ceil = false) => ({ theme }: { theme: Theme }) =>
+    scaleValue(theme, value, ceil);
+
+const cellSize = createScaled(CELL_SIZE);
+const boardSize = createScaled(BOARD_SIZE * CELL_SIZE);
+const legendSize = createScaled(LEGEND_SIZE);
+const gameSize = createScaled(MAX_GAME_SIZE);
+const figureFontSize = createScaled(60, true);
+
+export const Game = styled.div`
+    max-width: ${gameSize}px;
+    display: flex;
+    flex-direction: row;
+`;
+
+export const GameInner = styled.div`
+    display: flex;
+    flex-direction: column;
+`;
+
+export const Columns = styled.div`
+    /* background-color: yellow; */
+    align-self: center;
+    flex-wrap: 0;
+    flex-shrink: 0;
+    width: ${createScaled(CELL_SIZE * BOARD_SIZE - LEGEND_SIZE)}px;
+    display: flex;
+    height: ${legendSize}px;
+    justify-content: space-between;
+    flex: 1;
+    flex-direction: row;
+`;
+
+export const Rows = styled.div`
+    display: flex;
+    width: ${legendSize}px;
+    justify-content: space-evenly;
+    flex: 1;
+    flex-direction: column;
+`;
+
+export const LegendItem = styled.div`
+    width: ${legendSize}px;
+    height: ${legendSize}px;
+    align-items: center;
+    display: flex;
+    justify-content: space-around;
+`;
 
 export const Board = styled.div`
     position: relative;
-    width: ${CELL_SIZE * BOARD_SIZE};
-    height: ${CELL_SIZE * BOARD_SIZE};
+    width: ${boardSize};
+    height: ${boardSize};
 `;
 
 export const Row = styled.div`
@@ -19,15 +79,15 @@ export const Row = styled.div`
 export interface CellProps { white?: boolean; highlight?: boolean }
 
 export const Cell = styled.div<CellProps>`
-    width: ${CELL_SIZE}px;
-    height: ${CELL_SIZE}px;
+    width: ${cellSize}px;
+    height: ${cellSize}px;
     box-sizing: border-box;
     background-color: ${({ white }) => white === true ? "#AAA" : "#555"};
 `;
 
 export const CellHighlight = styled.div<{ highlight?: boolean }>`
-    width: ${CELL_SIZE}px;
-    height: ${CELL_SIZE}px;
+    width: ${cellSize}px;
+    height: ${cellSize}px;
     box-sizing: border-box;
     background-color: transparent;
     border: ${({ highlight }) => highlight && "3px red solid"};
@@ -45,20 +105,20 @@ export const FigureContainer = styled(Aquedux.div)<{  }>`
 
 export const Palac = styled.div`
     position: absolute;
-    left: ${CELL_SIZE * 2 - 1}px;
-    top: ${CELL_SIZE * 2 - 1}px;
-    width: ${CELL_SIZE * 5 + 2}px;
-    height: ${CELL_SIZE * 5 + 2}px;
+    left: ${createScaled(CELL_SIZE * 2 - 1)}px;
+    top: ${createScaled(CELL_SIZE * 2 - 1)}px;
+    width: ${createScaled(CELL_SIZE * 5 + 2)}px;
+    height: ${createScaled(CELL_SIZE * 5 + 2)}px;
     border: 2px black solid;
     box-sizing: border-box;
 `;
 
 export const Tron = styled.div`
     position: absolute;
-    left: ${CELL_SIZE * 4}px;
-    top: ${CELL_SIZE * 4}px;
-    width: ${CELL_SIZE}px;
-    height: ${CELL_SIZE}px;
+    left: ${createScaled(CELL_SIZE * 4)}px;
+    top: ${createScaled(CELL_SIZE * 4)}px;
+    width: ${cellSize}px;
+    height: ${cellSize}px;
     background-color: white;
     display: flex;
     align-items: center;
@@ -72,9 +132,9 @@ export const Figure = styled.div<{ white: boolean; enabled: boolean }>`
     pointer-events: ${({ enabled }) => enabled ? "auto" : "none" };
     cursor: pointer;
     user-select: none;
-    width: ${CELL_SIZE - 10}px;
-    height: ${CELL_SIZE - 10}px;
-    border-radius: ${CELL_SIZE / 2}px;
+    width: ${createScaled(CELL_SIZE - 10)}px;
+    height: ${createScaled(CELL_SIZE - 10)}px;
+    border-radius: ${createScaled(CELL_SIZE / 2)}px;
     background-color: ${({ white }) => white ? "white" : "black"};
     display: flex;
     align-items: center;
@@ -83,7 +143,7 @@ export const Figure = styled.div<{ white: boolean; enabled: boolean }>`
 
 export const FigureIcon = styled.div<{ white: boolean }>`
     color: ${({ white }) => white ? "black" : "white"};
-    font-size: 60px;
+    font-size: ${figureFontSize}px;
     user-select: none;
     margin-bottom: 10px;
 `;

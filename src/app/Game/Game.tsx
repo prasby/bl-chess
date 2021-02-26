@@ -1,10 +1,11 @@
 import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useHandler } from "react-use-handler";
 import * as Styles from "./Game.styles";
-import { times, chunk } from "lodash";
+import { times, chunk, range } from "lodash";
 import { BehaviorSubject } from "rxjs";
 import { map } from "rxjs/operators";
 import { BOARD_SIZE, Coordinate, defaultGameField, defaultMovedFigures, denormalizeCoord, FiguresMoved, figuresToIcons, figuresToRules, GameField, getKniazOf, getKniazychOf, getOppositeSide, getOutcomes, getSide, isValidDestination, MoveOutcomes, normalizeCoord, RAKIROUKA_STEP, Side, TRON_POSITION } from "src/data/game/domain";
+import { useTheme } from "styled-components";
 
 interface FigureProps extends Coordinate {
     cell: string;
@@ -21,9 +22,12 @@ const useDragHandler = (
 ) => {
     const isDown = useRef<boolean>(false);
     const movePosition = useRef<Coordinate>({ x: 0, y: 0});
+    const theme = useTheme() as Styles.Theme;
     const align = useHandler((e: MouseEvent) => {
-        const motionX = (e.clientX) / Styles.CELL_SIZE;
-        const motionY = (e.clientY) / Styles.CELL_SIZE;
+        const toLocal = (value: number) =>
+            (value - Styles.scaleValue(theme, Styles.LEGEND_SIZE)) / Styles.scaleValue(theme, Styles.CELL_SIZE);
+        const motionX = toLocal(e.clientX);
+        const motionY = toLocal(e.clientY);
         movePosition.current = {
             x: Math.floor(motionX),
             y: Math.floor(motionY),
@@ -79,11 +83,13 @@ const Figure = ({ x, y, enabled, cell, onMotionRequest, onSuggestRequest }: Figu
     }, [x, y]);
     const coordinates = useMemo(() => ({ x, y }), [x, y]);
     const onMouseDown = useDragHandler(coordinates, positions, onMotionRequest, onSuggestRequest);
+    const theme = useTheme() as Styles.Theme;
+    const actualScaleSize = Styles.scaleValue(theme, Styles.CELL_SIZE);
     return (
         <Styles.FigureContainer
             style={{
-                top: positions.y.pipe(map(v => `${v * Styles.CELL_SIZE}px`)),
-                left: positions.x.pipe(map(v => `${v * Styles.CELL_SIZE}px`)),
+                top: positions.y.pipe(map(v => `${v * actualScaleSize}px`)),
+                left: positions.x.pipe(map(v => `${v * actualScaleSize}px`)),
                 zIndex: positions.zIndex,
             }}
             onMouseDown={onMouseDown}
@@ -229,6 +235,9 @@ const Cell = React.memo((props: CellProps) => {
     )
 });
 
+const collumns =["a", "b", "c", "d", "e", "f", "g", "h", "i"];
+const rows = range(1, 9).map(v => v.toString());
+
 export const Game = () => {
     const [loadedField, setLoadedField] = useState<string>("");
     const [gameField, setGameField] = useState(defaultGameField);
@@ -252,8 +261,6 @@ export const Game = () => {
         if (getSide(figureId) !== activeSide) {
             return;
         }
-        const [figureType] = figureId.split("-");
-        const rules = figuresToRules[figureType];
         const suggestions = getAvailableMotions(gameField, figuresMoved, from, false);
         setHighlights([figureCell, ...suggestions.map(normalizeCoord)]);
     })
@@ -289,55 +296,70 @@ export const Game = () => {
     });
     return (
         <div>
-
-            <Styles.Board>
-                {times(BOARD_SIZE, (row) => (
-                    <Styles.Row key={row}>
-                        {times(BOARD_SIZE, (col) => (
-                            <Cell
-                                position={normalizeCoord({ x: col, y: row })}
-                                onCellSelect={onCellSelect}
-                                key={row + col}
-                                white={(row + col) % 2 === 0}
-                            />
+            <Styles.Game>
+                <Styles.Rows>
+                    {rows.map(c => <Styles.LegendItem>{c}</Styles.LegendItem>)}
+                </Styles.Rows>
+                <Styles.GameInner>
+                    <Styles.Columns>
+                        {collumns.map(c => <Styles.LegendItem>{c}</Styles.LegendItem>)}
+                    </Styles.Columns>
+                    <Styles.Board>
+                        {times(BOARD_SIZE, (row) => (
+                            <Styles.Row key={row}>
+                                {times(BOARD_SIZE, (col) => (
+                                    <Cell
+                                        position={normalizeCoord({ x: col, y: row })}
+                                        onCellSelect={onCellSelect}
+                                        key={row + col}
+                                        white={(row + col) % 2 === 0}
+                                    />
+                                ))}
+                            </Styles.Row>
                         ))}
-                    </Styles.Row>
-                ))}
-                <Styles.Layer>
-                    <Styles.Palac />
-                    <Styles.Tron>X</Styles.Tron>
-                </Styles.Layer>
-                <Styles.Layer>
-                    {times(BOARD_SIZE, (row) => (
-                        <Styles.Row key={row}>
-                            {times(BOARD_SIZE, (col) => (
-                                <Styles.CellHighlight
-                                    key={row + col}
-                                    highlight={highlights.includes(normalizeCoord({ x: col, y: row }))}
-                                />
-                            ))}
-                        </Styles.Row>
-                    ))} 
-                </Styles.Layer>
-                <Styles.Layer>
-                    {gameField.map((cell, i) => {
-                        if (typeof cell === "string") {
-                            return (
-                                <Figure
-                                enabled={getSide(cell) === activeSide}
-                                onSuggestRequest={onSuggestRequest}
-                                onMotionRequest={onMotionRequest}
-                                key={cell}
-                                cell={cell}
-                                {...denormalizeCoord(i)}
-                                />
-                            )
-                            
-                        }
-                        return null;
-                    })}
-                </Styles.Layer>
-            </Styles.Board>
+                        <Styles.Layer>
+                            <Styles.Palac />
+                            <Styles.Tron>X</Styles.Tron>
+                        </Styles.Layer>
+                        <Styles.Layer>
+                            {times(BOARD_SIZE, (row) => (
+                                <Styles.Row key={row}>
+                                    {times(BOARD_SIZE, (col) => (
+                                        <Styles.CellHighlight
+                                            key={row + col}
+                                            highlight={highlights.includes(normalizeCoord({ x: col, y: row }))}
+                                        />
+                                    ))}
+                                </Styles.Row>
+                            ))} 
+                        </Styles.Layer>
+                        <Styles.Layer>
+                            {gameField.map((cell, i) => {
+                                if (typeof cell === "string") {
+                                    return (
+                                        <Figure
+                                            enabled={getSide(cell) === activeSide}
+                                            onSuggestRequest={onSuggestRequest}
+                                            onMotionRequest={onMotionRequest}
+                                            key={cell}
+                                            cell={cell}
+                                            {...denormalizeCoord(i)}
+                                        />
+                                    )
+                                    
+                                }
+                                return null;
+                            })}
+                        </Styles.Layer>
+                    </Styles.Board>
+                    <Styles.Columns>
+                        {collumns.map(c => <Styles.LegendItem>{c}</Styles.LegendItem>)}
+                    </Styles.Columns>
+                </Styles.GameInner>
+                <Styles.Rows>
+                    {rows.map(c => <Styles.LegendItem>{c}</Styles.LegendItem>)}
+                </Styles.Rows>
+            </Styles.Game>
             <div>
                 LOAD GAME
                 <input onChange={onLoadedFieldChange} value={loadedField} />

@@ -67,8 +67,7 @@ export const rakiroukaTest = ["wl-1",0,0,0,"wkz",0,"wv-2","wg-2","wl-2","wr-1",0
 export const karanacyjaTest = ["wl-1","wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wr-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9",0,0,0,0,0,0,0,0,0,0,0,0,"wgt","wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"bkz",0,0,0,0,0,0,0,0,0,"br-5",0,0,0,0,"br-1","br-2","br-3","br-4",0,"br-6","br-7","br-8","br-9","bl-1","bg-1","bv-1","bkc",0,"bgt","bv-2","bg-2","bl-2"];
 
 export const normalGame = flatMap([
-    ["wl-1", "wg-1", "wv-1", "wkc", "wkz", "wgt", "wv-2", "wg-2", "wl-2"],
-    // ["wl-1", 0, 0, 0, "wkz", 0, 0, 0, "wl-2"],
+    ["wl-1", "wv-1", "wg-1", "wgt", "wkz", "wkc", "wv-2", "wg-2", "wl-2"],
     ["wr-1", "wr-2", "wr-3", "wr-4", "wr-5", "wr-6", "wr-7", "wr-8", "wr-9"],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -76,8 +75,7 @@ export const normalGame = flatMap([
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     ["br-1", "br-2", "br-3", "br-4", "br-5", "br-6", "br-7", "br-8", "br-9"],
-    ["bl-1", "bg-1", "bv-1", "bkc", "bkz", "bgt", "bv-2", "bg-2", "bl-2"],
-    // ["bl-1", 0, 0, 0, "bkz", 0, 0, 0, "bl-2"],
+    ["bl-1", "bg-1", "bv-1", "bkc", "bkz", "bgt", "bg-2", "bv-2", "bl-2"],
 ]);
 
 type Motion = { from: Coordinate; to: Coordinate };
