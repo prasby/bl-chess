@@ -125,7 +125,8 @@ export const getOutcomes = (board: GameField, from: Coordinate, to: Coordinate):
 };
 
 
-export const defaultGameField = normalGame;
+// export const defaultGameField = normalGame;
+export const defaultGameField = karanacyjaTest;
 
 export type FiguresMoved = { [key: string]: boolean };
 export const defaultMovedFigures: FiguresMoved = {};

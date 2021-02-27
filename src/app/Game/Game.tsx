@@ -134,13 +134,16 @@ const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, figur
         newGameField[newPos] = newGameField[prevPos];
         newGameField[prevPos] = 0;
     });
-    const oppositeSide = getOppositeSide(getSide(figureId));
+    const activeSide = getSide(figureId);
+    const oppositeSide = getOppositeSide(activeSide);
     const kniazPosition = getKniazOf(newGameField, oppositeSide);
+    let newActiveSide = oppositeSide;
     if (kniazPosition === -1) {
+        newActiveSide = activeSide;
         const position = getKniazychOf(newGameField, oppositeSide);
         newGameField[position] = `${oppositeSide}kz`;
     }
-    return [newGameField, figuresMoved] as const;
+    return [newGameField, figuresMoved, newActiveSide] as const;
 };
 
 const getFiguresOf = (gameField: GameField, side: Side): number[] => {
@@ -291,9 +294,9 @@ export const Game = () => {
             return false;
         }
         const figureId = gameField[normalizeCoord(from)];
-        const [newGameField, justMovedFigures] = processOutcomes(gameField, figuresMoved, figureId, result);
+        const [newGameField, justMovedFigures, newActiveSide] = processOutcomes(gameField, figuresMoved, figureId as string, result);
         setGameField(newGameField);
-        setActiveSide(getOppositeSide(activeSide));
+        setActiveSide(newActiveSide);
         setFiguresMoved({ ...figuresMoved, ...justMovedFigures });
         return true;
     });
