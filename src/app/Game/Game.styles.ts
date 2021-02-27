@@ -18,11 +18,16 @@ export const scaleValue = (theme: Theme, value: number, ceil = false) => {
 const createScaled = (value: number, ceil = false) => ({ theme }: { theme: Theme }) =>
     scaleValue(theme, value, ceil);
 
+const enableOnSize = (condition: (gameSize: number) => boolean) => ({ theme }: { theme: Theme }) =>
+    condition(theme.gameSize);
+
+
 const cellSize = createScaled(CELL_SIZE);
 const boardSize = createScaled(BOARD_SIZE * CELL_SIZE);
 const legendSize = createScaled(LEGEND_SIZE);
 const gameSize = createScaled(MAX_GAME_SIZE);
-const figureFontSize = createScaled(60, true);
+const figureFontSize = createScaled(50, true);
+const enableDrag = enableOnSize(gameSize => gameSize > 400);
 
 export const Game = styled.div`
     max-width: ${gameSize}px;
@@ -97,7 +102,7 @@ export const FigureContainer = styled(Aquedux.div)<{  }>`
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding: 5px;
+    padding: ${createScaled(5)}px;
     position: absolute;
     
 `;
@@ -121,14 +126,14 @@ export const Tron = styled.div`
     background-color: white;
     display: flex;
     align-items: center;
-    font-size: 40pt;
+    font-size: ${createScaled(40)}pt;
     font-weight: bold;
     justify-content: space-around;
     user-select: none;
 `;
 
 export const Figure = styled.div<{ white: boolean; enabled: boolean }>`
-    pointer-events: ${({ enabled }) => enabled ? "auto" : "none" };
+    pointer-events: ${({ enabled, theme }) => enabled && enableDrag({ theme }) ? "auto" : "none" };
     cursor: pointer;
     user-select: none;
     width: ${createScaled(CELL_SIZE - 10)}px;
@@ -142,9 +147,10 @@ export const Figure = styled.div<{ white: boolean; enabled: boolean }>`
 
 export const FigureIcon = styled.div<{ white: boolean }>`
     color: ${({ white }) => white ? "black" : "white"};
-    font-size: ${figureFontSize}px;
+    font-size: ${figureFontSize}pt;
     user-select: none;
-    margin-bottom: 10px;
+    pointer-events: none;
+    margin-bottom: ${createScaled(10)}px;
 `;
 
 export const Layer = styled.div`

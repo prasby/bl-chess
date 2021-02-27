@@ -100,9 +100,9 @@ const Figure = ({ reverseBoard, x, y, enabled, cell, onMotionRequest, onSuggestR
     const displayPosition = (value: Observable<number>, reverse: boolean) => {
         return value.pipe(map(v => {
             const c = reverse ? BOARD_SIZE - 1 - v : v;
-            return `${c * actualScaleSize}px`
-        }))
-    }
+            return `${c * actualScaleSize}px`;
+        }));
+    };
     return (
         <Styles.FigureContainer
             style={{
