@@ -2,7 +2,7 @@ import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from "react"
 import { useHandler } from "react-use-handler";
 import * as Styles from "./Game.styles";
 import { times, chunk, range } from "lodash";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { BOARD_SIZE, Coordinate, defaultGameField, defaultMovedFigures, denormalizeCoord, FiguresMoved, figuresToIcons, figuresToRules, GameField, getKniazOf, getKniazychOf, getOppositeSide, getOutcomes, getSide, isValidDestination, MoveOutcomes, normalizeCoord, RAKIROUKA_STEP, Side, TRON_POSITION } from "src/data/game/domain";
 import { useTheme } from "styled-components";
@@ -10,22 +10,34 @@ import { useTheme } from "styled-components";
 interface FigureProps extends Coordinate {
     cell: string;
     enabled: boolean;
+    reverseBoard: boolean;
     onSuggestRequest(from: Coordinate): void;
     onMotionRequest(from: Coordinate, to: Coordinate): boolean;
 }
 
 const useDragHandler = (
-    coordinates: { x: number; y: number },
+    startCoord: { x: number; y: number },
     positions: { x: BehaviorSubject<number>; y: BehaviorSubject<number>, zIndex: BehaviorSubject<number> },
     onMotionRequest: (from: Coordinate, to: Coordinate) => boolean,
     onSuggestRequest: (from: Coordinate) => void,
+    reverse: boolean,
 ) => {
     const isDown = useRef<boolean>(false);
     const movePosition = useRef<Coordinate>({ x: 0, y: 0});
     const theme = useTheme() as Styles.Theme;
+    const toLocal = (value: number) => {
+        const legend = Styles.scaleValue(theme, Styles.LEGEND_SIZE);
+        const cell = Styles.scaleValue(theme, Styles.CELL_SIZE);
+        const position = (value - legend) / cell;
+        return reverse ? BOARD_SIZE - position : position;
+    }
+    const coordToLocal = (coordinate: Coordinate) => {
+        return {
+            x: toLocal(coordinate.x),
+            y: toLocal(coordinate.y),
+        }
+    }
     const align = useHandler((e: MouseEvent) => {
-        const toLocal = (value: number) =>
-            (value - Styles.scaleValue(theme, Styles.LEGEND_SIZE)) / Styles.scaleValue(theme, Styles.CELL_SIZE);
         const motionX = toLocal(e.clientX);
         const motionY = toLocal(e.clientY);
         movePosition.current = {
@@ -40,9 +52,9 @@ const useDragHandler = (
             if (isDown.current) {
                 isDown.current = false;
                 positions.zIndex.next(0);
-                if (!onMotionRequest(coordinates, movePosition.current)) {
-                    positions.x.next(coordinates.x);
-                    positions.y.next(coordinates.y);
+                if (!onMotionRequest(startCoord, movePosition.current)) {
+                    positions.x.next(startCoord.x);
+                    positions.y.next(startCoord.y);
                 }
             }
         };
@@ -57,20 +69,20 @@ const useDragHandler = (
             document.removeEventListener("mousemove", move);
             document.removeEventListener("mouseup", setMouseUp);
         }
-    }, [coordinates]);
+    }, [startCoord]);
     return useHandler((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        onSuggestRequest(coordinates);
+        onSuggestRequest(startCoord);
         isDown.current = true;
         align(event.nativeEvent);
         positions.zIndex.next(1000);
         movePosition.current = {
-            x: Math.floor(coordinates.x),
-            y: Math.floor(coordinates.y),
+            x: Math.floor(startCoord.x),
+            y: Math.floor(startCoord.y),
         }
     });
 };
 
-const Figure = ({ x, y, enabled, cell, onMotionRequest, onSuggestRequest }: FigureProps) => {
+const Figure = ({ reverseBoard, x, y, enabled, cell, onMotionRequest, onSuggestRequest }: FigureProps) => {
     const white = (cell as string).charAt(0) === "w";
     const positions = useMemo(() => ({
         x: new BehaviorSubject(x),
@@ -82,14 +94,20 @@ const Figure = ({ x, y, enabled, cell, onMotionRequest, onSuggestRequest }: Figu
         positions.y.next(y);
     }, [x, y]);
     const coordinates = useMemo(() => ({ x, y }), [x, y]);
-    const onMouseDown = useDragHandler(coordinates, positions, onMotionRequest, onSuggestRequest);
+    const onMouseDown = useDragHandler(coordinates, positions, onMotionRequest, onSuggestRequest, reverseBoard);
     const theme = useTheme() as Styles.Theme;
     const actualScaleSize = Styles.scaleValue(theme, Styles.CELL_SIZE);
+    const displayPosition = (value: Observable<number>, reverse: boolean) => {
+        return value.pipe(map(v => {
+            const c = reverse ? BOARD_SIZE - 1 - v : v;
+            return `${c * actualScaleSize}px`
+        }))
+    }
     return (
         <Styles.FigureContainer
             style={{
-                top: positions.y.pipe(map(v => `${v * actualScaleSize}px`)),
-                left: positions.x.pipe(map(v => `${v * actualScaleSize}px`)),
+                top: displayPosition(positions.y, reverseBoard),
+                left: displayPosition(positions.x, reverseBoard),
                 zIndex: positions.zIndex,
             }}
             onMouseDown={onMouseDown}
@@ -236,9 +254,10 @@ const Cell = React.memo((props: CellProps) => {
 });
 
 const collumns =["a", "b", "c", "d", "e", "f", "g", "h", "i"];
-const rows = range(1, 9).map(v => v.toString());
+const rows = range(0, 9).map(v => (v + 1).toString());
 
 export const Game = () => {
+    const [displaySide, setDisplaySide] = useState<Side>("w");
     const [loadedField, setLoadedField] = useState<string>("");
     const [gameField, setGameField] = useState(defaultGameField);
     const [activeSide, setActiveSide] = useState<Side>("w");
@@ -294,20 +313,25 @@ export const Game = () => {
             setHighlights([]);
         }
     });
+    const reverseBoard = displaySide === "w";
+    const cellNumeration = range(0, BOARD_SIZE);
+    const rotatedCellNumeration = reverseBoard ?
+        cellNumeration.concat().reverse() :
+        cellNumeration;
     return (
         <div>
             <Styles.Game>
-                <Styles.Rows>
+                <Styles.Rows reverseBoard={reverseBoard}>
                     {rows.map(c => <Styles.LegendItem>{c}</Styles.LegendItem>)}
                 </Styles.Rows>
                 <Styles.GameInner>
-                    <Styles.Columns>
+                    <Styles.Columns reverseBoard={reverseBoard}>
                         {collumns.map(c => <Styles.LegendItem>{c}</Styles.LegendItem>)}
                     </Styles.Columns>
                     <Styles.Board>
-                        {times(BOARD_SIZE, (row) => (
+                        {rotatedCellNumeration.map((row) => (
                             <Styles.Row key={row}>
-                                {times(BOARD_SIZE, (col) => (
+                                {rotatedCellNumeration.map((col) => (
                                     <Cell
                                         position={normalizeCoord({ x: col, y: row })}
                                         onCellSelect={onCellSelect}
@@ -322,9 +346,9 @@ export const Game = () => {
                             <Styles.Tron>X</Styles.Tron>
                         </Styles.Layer>
                         <Styles.Layer>
-                            {times(BOARD_SIZE, (row) => (
+                            {rotatedCellNumeration.map((row) => (
                                 <Styles.Row key={row}>
-                                    {times(BOARD_SIZE, (col) => (
+                                    {rotatedCellNumeration.map((col) => (
                                         <Styles.CellHighlight
                                             key={row + col}
                                             highlight={highlights.includes(normalizeCoord({ x: col, y: row }))}
@@ -338,6 +362,7 @@ export const Game = () => {
                                 if (typeof cell === "string") {
                                     return (
                                         <Figure
+                                            reverseBoard={reverseBoard}
                                             enabled={getSide(cell) === activeSide}
                                             onSuggestRequest={onSuggestRequest}
                                             onMotionRequest={onMotionRequest}
@@ -352,14 +377,32 @@ export const Game = () => {
                             })}
                         </Styles.Layer>
                     </Styles.Board>
-                    <Styles.Columns>
+                    <Styles.Columns reverseBoard={reverseBoard}>
                         {collumns.map(c => <Styles.LegendItem>{c}</Styles.LegendItem>)}
                     </Styles.Columns>
                 </Styles.GameInner>
-                <Styles.Rows>
+                <Styles.Rows reverseBoard={reverseBoard}>
                     {rows.map(c => <Styles.LegendItem>{c}</Styles.LegendItem>)}
                 </Styles.Rows>
             </Styles.Game>
+            <div>
+                <input
+                    onChange={(event) => setDisplaySide(event.target.value as Side)}
+                    type="radio"
+                    value="w"
+                    checked={displaySide === "w"}
+                    name="displaySide"
+                />
+                Bely
+                <input
+                    onChange={(event) => setDisplaySide(event.target.value as Side)}
+                    type="radio"
+                    value="b"
+                    checked={displaySide === "b"}
+                    name="displaySide"
+                />
+                Čorny
+            </div>
             <div>
                 LOAD GAME
                 <input onChange={onLoadedFieldChange} value={loadedField} />

@@ -35,8 +35,7 @@ export const GameInner = styled.div`
     flex-direction: column;
 `;
 
-export const Columns = styled.div`
-    /* background-color: yellow; */
+export const Columns = styled.div<{ reverseBoard: boolean }>`
     align-self: center;
     flex-wrap: 0;
     flex-shrink: 0;
@@ -45,15 +44,15 @@ export const Columns = styled.div`
     height: ${legendSize}px;
     justify-content: space-between;
     flex: 1;
-    flex-direction: row;
+    flex-direction: ${({ reverseBoard }) => reverseBoard ? "row" : "row-reverse"};
 `;
 
-export const Rows = styled.div`
+export const Rows = styled.div<{ reverseBoard: boolean }>`
     display: flex;
     width: ${legendSize}px;
     justify-content: space-evenly;
     flex: 1;
-    flex-direction: column;
+    flex-direction: ${({ reverseBoard }) => reverseBoard ? "column-reverse" : "column"};
 `;
 
 export const LegendItem = styled.div`
