@@ -80,9 +80,10 @@ export const Row = styled.div`
     flex-direction: row;
 `;
 
-export interface CellProps { white?: boolean; highlight?: boolean }
+export interface CellProps { white?: boolean; highlight?: boolean, enabled: boolean }
 
 export const Cell = styled.div<CellProps>`
+    pointer-events: ${({ enabled }) => enabled ? "auto" : "none"};
     width: ${cellSize}px;
     height: ${cellSize}px;
     box-sizing: border-box;

@@ -124,7 +124,9 @@ const Figure = ({ reverseBoard, x, y, enabled, cell, onMotionRequest, onSuggestR
     );
 };
 
-const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, figureId: string, outcomes: MoveOutcomes) => {
+type GameConclusion = { type: "tron" | "mat", winner: Side };
+
+const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, figureId: string, outcomes: MoveOutcomes, checkGameConclusion: boolean) => {
     const newGameField = [...gameField];
     const justMovedFigures: { [key: string]: boolean } = {};
     outcomes.motions.forEach((motion) => {
@@ -138,12 +140,29 @@ const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, figur
     const oppositeSide = getOppositeSide(activeSide);
     const kniazPosition = getKniazOf(newGameField, oppositeSide);
     let newActiveSide = oppositeSide;
+    let karanacyjaHappened = false;
     if (kniazPosition === -1) {
+        karanacyjaHappened = true;
         newActiveSide = activeSide;
         const position = getKniazychOf(newGameField, oppositeSide);
         newGameField[position] = `${oppositeSide}kz`;
     }
-    return [newGameField, figuresMoved, newActiveSide] as const;
+    const newFiguresMoved = {
+        ...figuresMoved,
+        ...justMovedFigures,
+    }
+    let conclusion: GameConclusion | undefined = undefined;
+    if (checkGameConclusion) {
+        if (karanacyjaHappened && isUnderCheck(newGameField, newFiguresMoved, oppositeSide)) {
+            conclusion = { type: "mat", winner: activeSide };
+        } else {
+            const availableOpponentMotions = getAllAvailableMotions(newGameField, newFiguresMoved, oppositeSide);
+            conclusion = availableOpponentMotions.length === 0 ?
+                { type: "mat", winner: activeSide } :
+                undefined;
+        }
+    }
+    return [newGameField, justMovedFigures, newActiveSide, conclusion] as const;
 };
 
 const getFiguresOf = (gameField: GameField, side: Side): number[] => {
@@ -155,6 +174,16 @@ const getFiguresOf = (gameField: GameField, side: Side): number[] => {
         }
     }
     return result;
+};
+
+const getAllAvailableMotions = (gameField: GameField, figuresMoved: FiguresMoved, side: Side) => {
+    const oppFigures = getFiguresOf(gameField, side);
+    return oppFigures.flatMap(
+        oppPosition => {
+            const oppCoordinate = denormalizeCoord(oppPosition);
+            return getAvailableMotions(gameField, figuresMoved, oppCoordinate, false);
+        }
+    );
 };
 
 const isPositionAttacked = (gameField: GameField, figuresMoved: FiguresMoved, side: Side, position: number) => {
@@ -207,7 +236,7 @@ const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: s
             if (invalidRakirouka) {
                 return false;
             }
-            const [newGameField, newFiguresMoved] = processOutcomes(board, figuresMoved, figureId, outcomes);
+            const [newGameField, newFiguresMoved] = processOutcomes(board, figuresMoved, figureId, outcomes, false);
             const activeSide = getSide(figureId);
             const underCheck = isUnderCheck(newGameField, newFiguresMoved, activeSide);
             const underRokash = isUnderRokash(newGameField, newFiguresMoved, activeSide);
@@ -241,6 +270,7 @@ const gameRules = (board: (number | string)[], activeSide: Side, figuresMoved: {
 interface CellProps extends Styles.CellProps {
     onCellSelect(value: number): void;
     position: number,
+    enabled: boolean,
 }
 
 const Cell = React.memo((props: CellProps) => {
@@ -249,6 +279,7 @@ const Cell = React.memo((props: CellProps) => {
     });
     return (
         <Styles.Cell
+            enabled={props.enabled}        
             onClickCapture={onClick}
             white={props.white}
             highlight={props.highlight}
@@ -263,6 +294,7 @@ export const Game = () => {
     const [displaySide, setDisplaySide] = useState<Side>("w");
     const [loadedField, setLoadedField] = useState<string>("");
     const [gameField, setGameField] = useState(defaultGameField);
+    const [gameConclusion, setGameConclusion] = useState<GameConclusion | undefined>();
     const [activeSide, setActiveSide] = useState<Side>("w");
     const [figuresMoved, setFiguresMoved] = useState(defaultMovedFigures);
     const [highlights, setHighlights] = useState<number[]>([]);
@@ -271,7 +303,12 @@ export const Game = () => {
     });
     const resetGame = useHandler(() => {
         setHighlights([]);
-        setGameField(JSON.parse(loadedField!));
+        setGameConclusion(undefined);
+        try {
+            setGameField(JSON.parse(loadedField!));
+        } catch(err) {
+            setGameField(defaultGameField);
+        }
         setFiguresMoved({});
         setActiveSide("w");
     });
@@ -294,7 +331,8 @@ export const Game = () => {
             return false;
         }
         const figureId = gameField[normalizeCoord(from)];
-        const [newGameField, justMovedFigures, newActiveSide] = processOutcomes(gameField, figuresMoved, figureId as string, result);
+        const [newGameField, justMovedFigures, newActiveSide, gameConclusion] = processOutcomes(gameField, figuresMoved, figureId as string, result, true);
+        setGameConclusion(gameConclusion);
         setGameField(newGameField);
         setActiveSide(newActiveSide);
         setFiguresMoved({ ...figuresMoved, ...justMovedFigures });
@@ -321,6 +359,9 @@ export const Game = () => {
     const rotatedCellNumeration = reverseBoard ?
         cellNumeration.concat().reverse() :
         cellNumeration;
+    const getEnabled = (cell: string) => {
+        return getSide(cell) === activeSide && !gameConclusion;
+    };
     return (
         <div>
             <Styles.Game>
@@ -333,9 +374,10 @@ export const Game = () => {
                     </Styles.Columns>
                     <Styles.Board>
                         {rotatedCellNumeration.map((row) => (
-                            <Styles.Row key={row}>
+                        <Styles.Row key={row}>
                                 {rotatedCellNumeration.map((col) => (
                                     <Cell
+                                        enabled={!gameConclusion}
                                         position={normalizeCoord({ x: col, y: row })}
                                         onCellSelect={onCellSelect}
                                         key={row + col}
@@ -366,7 +408,7 @@ export const Game = () => {
                                     return (
                                         <Figure
                                             reverseBoard={reverseBoard}
-                                            enabled={getSide(cell) === activeSide}
+                                            enabled={getEnabled(cell)}
                                             onSuggestRequest={onSuggestRequest}
                                             onMotionRequest={onMotionRequest}
                                             key={cell}
