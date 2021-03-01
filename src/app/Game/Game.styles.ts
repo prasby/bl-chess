@@ -42,6 +42,7 @@ export const GameInner = styled.div`
 
 export const Columns = styled.div<{ reverseBoard: boolean }>`
     align-self: center;
+    user-select: none;
     flex-wrap: 0;
     flex-shrink: 0;
     width: ${createScaled(CELL_SIZE * BOARD_SIZE - LEGEND_SIZE)}px;
@@ -54,6 +55,7 @@ export const Columns = styled.div<{ reverseBoard: boolean }>`
 
 export const Rows = styled.div<{ reverseBoard: boolean }>`
     display: flex;
+    user-select: none;
     width: ${legendSize}px;
     justify-content: space-evenly;
     flex: 1;

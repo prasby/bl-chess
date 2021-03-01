@@ -155,6 +155,8 @@ const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, figur
     if (checkGameConclusion) {
         if (karanacyjaHappened && isUnderCheck(newGameField, newFiguresMoved, oppositeSide)) {
             conclusion = { type: "mat", winner: activeSide };
+        } else if (onTron(gameField, activeSide) && onTron(newGameField, activeSide)) {
+            conclusion = { type: "tron", winner: activeSide };
         } else {
             const availableOpponentMotions = getAllAvailableMotions(newGameField, newFiguresMoved, oppositeSide);
             conclusion = availableOpponentMotions.length === 0 ?
@@ -220,6 +222,16 @@ const isUnderCheck = (gameField: GameField, figuresMoved: FiguresMoved, side: Si
     return isPositionAttacked(gameField, figuresMoved, side, kniazPosition);
 };
 
+const onTron = (gameField: GameField, side: Side) => {
+    return [`${side}kz`, `${side}kc`].includes(gameField[TRON_POSITION].toString());
+};
+const onUnattackedTron = (gameField: GameField, figuresMoved: FiguresMoved, side: Side) => {
+    if (!onTron(gameField, side)) {
+        return false;
+    }
+    return !isPositionAttacked(gameField, figuresMoved, side, TRON_POSITION);
+};
+
 const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: string]: boolean }, from: Coordinate, checkAttack: boolean) => {
     const figureId = board[normalizeCoord(from)] as string;
     const denormalizedBoard = chunk(board, BOARD_SIZE);
@@ -232,7 +244,7 @@ const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: s
             const outcomes = getOutcomes(board, from, to);
             const invalidRakirouka = outcomes.beatenFields.find((coord) => {
                 return isPositionAttacked(board, figuresMoved, getSide(figureId), normalizeCoord(coord));
-            })
+            });
             if (invalidRakirouka) {
                 return false;
             }
@@ -240,7 +252,10 @@ const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: s
             const activeSide = getSide(figureId);
             const underCheck = isUnderCheck(newGameField, newFiguresMoved, activeSide);
             const underRokash = isUnderRokash(newGameField, newFiguresMoved, activeSide);
-            if (underCheck || underRokash || getKniazOf(newGameField, activeSide) === -1) {
+            const opponentOnUnattackedTron = onUnattackedTron(newGameField, newFiguresMoved, getOppositeSide(activeSide));
+            // wtf?
+            const checkKaranacyja = getKniazOf(newGameField, activeSide) === -1;
+            if (underCheck || underRokash || checkKaranacyja || opponentOnUnattackedTron) {
                 return false;
             }
             return true;
