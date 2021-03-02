@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useHandler } from "react-use-handler";
 import { ThemeProvider } from "styled-components";
 import { Game } from "src/app/Game";
-import { MAX_GAME_SIZE } from './app/Game/Game.styles';
+import { MAX_GAME_SIZE } from './utils/scale';
 
 const getGameSize = () => {
   const windowMinSize = Math.min(window.innerWidth, window.innerHeight);

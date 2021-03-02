@@ -1,0 +1,1 @@
+export { SelectFigureComponent as SelectFigure } from "./SelectFigure";

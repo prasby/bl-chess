@@ -1,0 +1,1 @@
+export { FigureComponent as Figure } from "./Figure";
