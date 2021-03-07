@@ -82,6 +82,30 @@ const useDragHandler = (
     });
 };
 
+export interface FigureRendererProps extends React.HTMLAttributes<HTMLElement> {
+    white: boolean;
+    enabled: boolean;
+    cell: string;
+}
+
+export const FigureRenderer = ({
+    white,
+    enabled,
+    cell,
+    ...rest
+}: FigureRendererProps) => {
+    return (
+        <Styles.Figure
+            {...rest}
+            white={white}
+            enabled={enabled}
+        >
+            <Styles.FigureIcon white={white}>
+                {figuresToIcons[cell.split("-")[0]]}
+            </Styles.FigureIcon>
+        </Styles.Figure>
+    );
+};
 
 export const FigureComponent = ({ reverseBoard, x, y, enabled, cell, onMotionRequest, onSuggestRequest }: FigureProps) => {
     const white = (cell as string).charAt(0) === "w";
@@ -113,14 +137,11 @@ export const FigureComponent = ({ reverseBoard, x, y, enabled, cell, onMotionReq
             }}
             onMouseDown={onMouseDown}
         >
-            <Styles.Figure
+            <FigureRenderer
                 white={white}
                 enabled={enabled}
-            >
-                <Styles.FigureIcon white={white}>
-                    {figuresToIcons[cell.split("-")[0]]}
-                </Styles.FigureIcon>
-            </Styles.Figure>
+                cell={cell}
+            />
         </Styles.FigureContainer>
     );
 };

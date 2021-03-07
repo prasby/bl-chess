@@ -63,6 +63,7 @@ export const checkTest = flatMap([
     [0, 0, 0, 0, 0, 0, 0, 0, "bkz"],
 ]);
 
+export const promotionTest = ["wl-1",0,0,0,"wkz",0,0,"wg-2","wl-2","wr-1","br-3",0,0,"wr-5","wr-6",0,"wr-8","wr-9",0,0,0,0,0,0,0,0,0,0,0,0,"wr-4","wg-1",0,"wr-7",0,0,0,0,0,0,0,0,"bv-2",0,0,0,"br-2",0,"br-4","bg-1",0,0,0,0,0,"wkc",0,0,0,0,0,"br-8",0,"br-1",0,"wr-3","br-12","br-5","br-6",0,0,"br-9",0, 0,0,0,"bkz",0,0,0,0];
 export const rakiroukaTest = ["wl-1",0,0,0,"wkz",0,"wv-2","wg-2","wl-2","wr-1",0,0,0,"wr-5","wr-6",0,"wr-8","wr-9",0,0,0,"wv-1",0,0,0,0,0,0,"wr-2","wr-3","wr-4","wg-1",0,"wr-7",0,0,0,0,0,0,0,0,"bv-2",0,0,0,"br-2","br-3","br-4","bg-1",0,0,0,0,0,"wkc",0,"bv-1",0,0,"wgt","br-8",0,"br-1",0,0,0,"br-5","br-6",0,0,"br-9","bl-1",0,0,0,"bkz",0,0,0,"bl-2"];
 export const karanacyjaTest = ["wl-1","wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wr-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9",0,0,0,0,0,0,0,0,0,0,0,0,"wgt","wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"bkz",0,0,0,0,0,0,0,0,"bkc","br-5",0, 0,0,0,"br-1","br-2","br-3","br-4",0,"br-6","br-7","br-8","br-9","bl-1","bg-1","bv-1",0,0,"bgt","bv-2","bg-2","bl-2"];
 export const matTest = [0,"wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wl-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,"wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,"bkz","br-5",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,"bl-1","br-2","br-3","bkc","br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"];
@@ -127,8 +128,8 @@ export const getOutcomes = (board: GameField, from: Coordinate, to: Coordinate):
 };
 
 
-export const defaultGameField = normalGame;
-// export const defaultGameField = tronTest;
+// export const defaultGameField = normalGame;
+export const defaultGameField = matTest;
 
 export type FiguresMoved = { [key: string]: boolean };
 export const defaultMovedFigures: FiguresMoved = {};
@@ -154,6 +155,9 @@ const whiteRatnik: FigureStrategy = (board, figuresMoved, { x, y }) => {
     const positions: Coordinate[] = [];
     const nextY = y + 1;
     const nextCoord = { x, y: nextY };
+    if (nextY === BOARD_SIZE || nextY === -1) {
+        return positions;
+    }
     if (board[nextY][x] === 0 && !isTron(nextCoord)) {
         positions.push({ x, y: nextY });
         const secondNextY = y + 2;

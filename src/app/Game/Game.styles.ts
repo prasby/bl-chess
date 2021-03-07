@@ -112,3 +112,15 @@ export const Layer = styled.div`
     left: 0;
     background-color: transparent;
 `;
+
+export const NotificationsLayer = styled(Layer)<{ isEnabled: boolean }>`
+    pointer-events: ${({isEnabled: enabled}) => enabled ? "auto" : "none"};
+    background-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: space-around;
+`;

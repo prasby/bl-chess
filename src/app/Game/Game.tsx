@@ -1,14 +1,53 @@
 import React, { ChangeEvent, useRef, useState } from "react";
 import { useHandler } from "react-use-handler";
 import * as Styles from "./Game.styles";
-import { chunk, range } from "lodash";
+import { chunk, range, uniqBy } from "lodash";
 import { BOARD_SIZE, Coordinate, defaultGameField, defaultMovedFigures, denormalizeCoord, FiguresMoved, figuresToRules, GameField, getKniazOf, getKniazychOf, getOppositeSide, getOutcomes, getSide, isValidDestination, MoveOutcomes, normalizeCoord, RAKIROUKA_STEP, Side, TRON_POSITION } from "src/data/game/domain";
 import { SelectFigure } from "./components";
 import { Figure } from "./components/Figure";
 
 type GameConclusion = { type: "tron" | "mat", winner: Side };
 
-const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, figureId: string, outcomes: MoveOutcomes, checkGameConclusion: boolean) => {
+const hasRatnikToPromote = (gameField: GameField, side: Side) => {
+    const rowIndex = side === "w" ? BOARD_SIZE - 1 : 0;
+    const row = chunk(gameField, BOARD_SIZE)[rowIndex];
+    return row.find(f => f.toString().indexOf(`${side}r`) === 0)
+};
+
+const checkTronConfirmed = (
+    side: Side,
+    gameField: GameField,
+    oldGameField: GameField
+): GameConclusion | undefined => {
+    if (onTron(gameField, side) && onTron(oldGameField, side)) {
+        return { type: "tron", winner: side };
+    }
+    return undefined;
+}
+
+const getGameConclusion = (
+    gameField: GameField,
+    oldGameField: GameField,
+    figuresMoved: FiguresMoved,
+    karanacyjaHappened: boolean,
+    side: Side
+): GameConclusion | undefined => {
+    const oppositeSide = getOppositeSide(side);
+    const tron = checkTronConfirmed(side, gameField, oldGameField);
+    if (tron) {
+        return tron;
+    }
+    if (karanacyjaHappened && isUnderCheck(gameField, figuresMoved, oppositeSide)) {
+        return { type: "mat", winner: side };
+    } else {
+        const availableOpponentMotions = getAllAvailableMotions(gameField, figuresMoved, oppositeSide);
+        return availableOpponentMotions.length === 0 ?
+            { type: "mat", winner: side } :
+            undefined;
+    }
+}
+
+const processMotionOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, activeSide: Side, outcomes: MoveOutcomes, checkGameConclusion: boolean) => {
     const newGameField = [...gameField];
     const justMovedFigures: { [key: string]: boolean } = {};
     outcomes.motions.forEach((motion) => {
@@ -18,7 +57,6 @@ const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, figur
         newGameField[newPos] = newGameField[prevPos];
         newGameField[prevPos] = 0;
     });
-    const activeSide = getSide(figureId);
     const oppositeSide = getOppositeSide(activeSide);
     const kniazPosition = getKniazOf(newGameField, oppositeSide);
     let newActiveSide = oppositeSide;
@@ -33,20 +71,14 @@ const processOutcomes = (gameField: GameField, figuresMoved: FiguresMoved, figur
         ...figuresMoved,
         ...justMovedFigures,
     }
-    let conclusion: GameConclusion | undefined = undefined;
-    if (checkGameConclusion) {
-        if (karanacyjaHappened && isUnderCheck(newGameField, newFiguresMoved, oppositeSide)) {
-            conclusion = { type: "mat", winner: activeSide };
-        } else if (onTron(gameField, activeSide) && onTron(newGameField, activeSide)) {
-            conclusion = { type: "tron", winner: activeSide };
-        } else {
-            const availableOpponentMotions = getAllAvailableMotions(newGameField, newFiguresMoved, oppositeSide);
-            conclusion = availableOpponentMotions.length === 0 ?
-                { type: "mat", winner: activeSide } :
-                undefined;
-        }
-    }
-    return [newGameField, justMovedFigures, newActiveSide, conclusion] as const;
+    const conclusion = checkGameConclusion ? getGameConclusion(
+        newGameField,
+        gameField,
+        newFiguresMoved,
+        karanacyjaHappened,
+        activeSide
+    ) : undefined;
+    return [newGameField, newFiguresMoved, newActiveSide, conclusion] as const;
 };
 
 const getFiguresOf = (gameField: GameField, side: Side): number[] => {
@@ -130,8 +162,8 @@ const getAvailableMotions = (board: (number | string)[], figuresMoved: { [key: s
             if (invalidRakirouka) {
                 return false;
             }
-            const [newGameField, newFiguresMoved] = processOutcomes(board, figuresMoved, figureId, outcomes, false);
             const activeSide = getSide(figureId);
+            const [newGameField, newFiguresMoved] = processMotionOutcomes(board, figuresMoved, activeSide, outcomes, false);
             const underCheck = isUnderCheck(newGameField, newFiguresMoved, activeSide);
             const underRokash = isUnderRokash(newGameField, newFiguresMoved, activeSide);
             const opponentOnUnattackedTron = onUnattackedTron(newGameField, newFiguresMoved, getOppositeSide(activeSide));
@@ -187,14 +219,42 @@ const Cell = React.memo((props: CellProps) => {
 const collumns =["a", "b", "c", "d", "e", "f", "g", "h", "i"];
 const rows = range(0, 9).map(v => (v + 1).toString());
 
+const getMissingFigures = (gameField: GameField, side: Side) => {
+    const allFigures = {
+        [`${side}g-1`]: false,
+        [`${side}v-1`]: false,
+        [`${side}l-1`]: false,
+        [`${side}g-2`]: false,
+        [`${side}v-2`]: false,
+        [`${side}l-2`]: false,
+        [`${side}gt`]: false,
+        [`${side}kc`]: false,
+        [`${side}kz`]: false,
+    }
+    for (let i = 0; i < gameField.length; i++) {
+        if (allFigures[gameField[i]] === false) {
+            allFigures[gameField[i]] = true;
+        }
+    }
+
+    return uniqBy(
+        Object.keys(allFigures)
+            .filter(f => allFigures[f] === false),
+        key => key.split("-")[0]
+    );
+    
+};
+
 export const Game = () => {
     const [displaySide, setDisplaySide] = useState<Side>("w");
     const [loadedField, setLoadedField] = useState<string>("");
     const [gameField, setGameField] = useState(defaultGameField);
     const [gameConclusion, setGameConclusion] = useState<GameConclusion | undefined>();
     const [activeSide, setActiveSide] = useState<Side>("w");
+    const [promotePosition, setPromotePosition] = useState<number>(0);
     const [figuresMoved, setFiguresMoved] = useState(defaultMovedFigures);
     const [highlights, setHighlights] = useState<number[]>([]);
+    const [selectingFigures, setSelectingFigures] = useState<Side | undefined>();
     const onLoadedFieldChange = useHandler((e: ChangeEvent<HTMLInputElement>) => {
         setLoadedField(e.target.value);
     });
@@ -228,7 +288,15 @@ export const Game = () => {
             return false;
         }
         const figureId = gameField[normalizeCoord(from)];
-        const [newGameField, justMovedFigures, newActiveSide, gameConclusion] = processOutcomes(gameField, figuresMoved, figureId as string, result, true);
+        const [newGameField, justMovedFigures, newActiveSide, gameConclusion] = processMotionOutcomes(gameField, figuresMoved, activeSide, result, true);
+        if (hasRatnikToPromote(newGameField, activeSide) && !hasRatnikToPromote(gameField, activeSide)) {
+            if (getMissingFigures(newGameField, activeSide).length > 0) {
+                setPromotePosition(normalizeCoord(to));
+                setSelectingFigures(activeSide);
+                setGameField(newGameField);
+                return true;
+            }
+        }
         setGameConclusion(gameConclusion);
         setGameField(newGameField);
         setActiveSide(newActiveSide);
@@ -250,6 +318,14 @@ export const Game = () => {
             selectedCell.current = -1;
             setHighlights([]);
         }
+    });
+    const onFigureSelected = useHandler((figureId: string) => {
+        // const newGameField = gameField.concat();
+        // newGameField[promotePosition] = figureId;
+        // setGameField(newGameField);
+        // setSelectingFigures(undefined);
+        // setActiveSide(getOppositeSide(activeSide));
+        // const [newGameField, newFiguresMoved] = processMotionOutcomes(board, figuresMoved, activeSide, outcomes, false);
     });
     const reverseBoard = displaySide === "w";
     const cellNumeration = range(0, BOARD_SIZE);
@@ -318,9 +394,14 @@ export const Game = () => {
                                 return null;
                             })}
                         </Styles.Layer>
-                        <Styles.Layer>
-                            <SelectFigure />
-                        </Styles.Layer>
+                        {selectingFigures && (
+                            <Styles.NotificationsLayer isEnabled>
+                                <SelectFigure
+                                    onFigureSelected={onFigureSelected}
+                                    selectingFigures={getMissingFigures(gameField, selectingFigures)}
+                                />
+                            </Styles.NotificationsLayer>
+                        )}
                     </Styles.Board>
                     <Styles.Columns reverseBoard={reverseBoard}>
                         {collumns.map(c => <Styles.LegendItem>{c}</Styles.LegendItem>)}
