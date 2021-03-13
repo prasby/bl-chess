@@ -1,9 +1,13 @@
-import { flatMap, range } from "lodash";
+import { flatMap, range, chunk, uniqBy } from "lodash";
 
 export const RAKIROUKA_STEP = 3;
 
 export const BOARD_SIZE = 9;
 
+export interface GameConclusion {
+    type: "tron" | "mat";
+    winner: Side;
+};
 
 export interface Coordinate {
     x: number;
@@ -67,6 +71,7 @@ export const promotionTest = ["wl-1",0,0,0,"wkz",0,0,"wg-2","wl-2","wr-1","br-3"
 export const rakiroukaTest = ["wl-1",0,0,0,"wkz",0,"wv-2","wg-2","wl-2","wr-1",0,0,0,"wr-5","wr-6",0,"wr-8","wr-9",0,0,0,"wv-1",0,0,0,0,0,0,"wr-2","wr-3","wr-4","wg-1",0,"wr-7",0,0,0,0,0,0,0,0,"bv-2",0,0,0,"br-2","br-3","br-4","bg-1",0,0,0,0,0,"wkc",0,"bv-1",0,0,"wgt","br-8",0,"br-1",0,0,0,"br-5","br-6",0,0,"br-9","bl-1",0,0,0,"bkz",0,0,0,"bl-2"];
 export const karanacyjaTest = ["wl-1","wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wr-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9",0,0,0,0,0,0,0,0,0,0,0,0,"wgt","wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"bkz",0,0,0,0,0,0,0,0,"bkc","br-5",0, 0,0,0,"br-1","br-2","br-3","br-4",0,"br-6","br-7","br-8","br-9","bl-1","bg-1","bv-1",0,0,"bgt","bv-2","bg-2","bl-2"];
 export const matTest = [0,"wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wl-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,"wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,"bkz","br-5",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,"bl-1","br-2","br-3","bkc","br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"];
+export const checkTest2 = [0,"wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wl-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,"wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,"bkz","br-5",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,"bl-1","br-2","br-3","bkc","br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"];
 export const karanacyjaMatTest = ["wl-1","wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2",0,"wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,"wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,"bkz","br-5",0,0,0,0,"br-1",0,0,"bkc",0,0,0,0,0,"bl-1","br-2","br-3",0,"br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"];
 
 export const normalGame = flatMap([
@@ -84,12 +89,24 @@ export const normalGame = flatMap([
 type Motion = { from: Coordinate; to: Coordinate };
 type Transformation = { position: Coordinate; toId: string };
 
-export interface MoveOutcomes {
+export interface MotionDetails {
     motions: Motion[];
     beatenFields: Coordinate[];
 }
 
 export type GameField = (number | string)[];
+
+export type FiguresMoved = { [key: string]: boolean };
+
+export type Side = "b" | "w";
+
+export interface GameStateSnapshot {
+    conclusion?: GameConclusion;
+    promotion?: { position: number, side: Side };
+    field: GameField;
+    activeSide: Side;
+    figuresMoved: FiguresMoved;
+};
 
 export const normalizeCoord = ({ x, y }: Coordinate) =>
     y * BOARD_SIZE + x
@@ -106,7 +123,7 @@ export const getKniazychOf = (gameField: GameField, side: Side) =>
 export const getKniazOf = (gameField: GameField, side: Side) =>
     gameField.findIndex(id => id === `${side}kz`);
 
-export const getOutcomes = (board: GameField, from: Coordinate, to: Coordinate): MoveOutcomes => {
+export const getMotionsDetails = (board: GameField, from: Coordinate, to: Coordinate): MotionDetails => {
     const figureId = board[normalizeCoord(from)] as string;
     const [figureType] = figureId.split("-");
     const motions = [{ from, to }];
@@ -127,14 +144,43 @@ export const getOutcomes = (board: GameField, from: Coordinate, to: Coordinate):
     return { motions, beatenFields };
 };
 
+export const getMissingFigures = (gameField: GameField, side: Side) => {
+    const allFigures = {
+        [`${side}g-1`]: false,
+        [`${side}v-1`]: false,
+        [`${side}l-1`]: false,
+        [`${side}g-2`]: false,
+        [`${side}v-2`]: false,
+        [`${side}l-2`]: false,
+        [`${side}gt`]: false,
+        [`${side}kc`]: false,
+        [`${side}kz`]: false,
+    }
+    for (let i = 0; i < gameField.length; i++) {
+        if (allFigures[gameField[i]] === false) {
+            allFigures[gameField[i]] = true;
+        }
+    }
 
-// export const defaultGameField = normalGame;
-export const defaultGameField = matTest;
+    return uniqBy(
+        Object.keys(allFigures)
+            .filter(f => allFigures[f] === false),
+        key => key.split("-")[0]
+    );
+    
+};
 
-export type FiguresMoved = { [key: string]: boolean };
-export const defaultMovedFigures: FiguresMoved = {};
+// check test 2
+export const defaultGameState = {"field":[0,"wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wl-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,0,0,"wr-5",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,"bl-1","br-2","br-3","bkz","br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"],"figuresMoved":{"wgt":true,"bkz":true,"wr-5":true},"activeSide":"b"};
 
-export type Side = "b" | "w";
+// export const defaultGameState: GameStateSnapshot = {
+//     // gameField: normalGame,
+//     // field: matTest,
+//     field: checkTest2,
+//     activeSide: "w",
+//     figuresMoved: {},
+//     conclusion: undefined,
+// };
 
 export const getSide = (figure: string): Side => {
   return figure.charAt(0) as Side;
@@ -350,3 +396,199 @@ export const figuresToRules: { [key: string]: FigureStrategy } = {
     bkc: kniazhych,
     bkz: kniaz,
 };
+
+export const hasRatnikToPromote = (gameField: GameField, side: Side) => {
+    const rowIndex = side === "w" ? BOARD_SIZE - 1 : 0;
+    const row = chunk(gameField, BOARD_SIZE)[rowIndex];
+    return row.find(f => f.toString().indexOf(`${side}r`) === 0)
+};
+
+export const checkTronConfirmed = (
+    side: Side,
+    gameField: GameField,
+    oldGameField: GameField
+): GameConclusion | undefined => {
+    if (onTron(gameField, side) && onTron(oldGameField, side)) {
+        return { type: "tron", winner: side };
+    }
+    return undefined;
+}
+
+export const getGameConclusion = (
+    gameState: GameStateSnapshot,
+    oldGameState: GameStateSnapshot,
+    karanacyjaHappened: boolean,
+    side: Side
+): GameConclusion | undefined => {
+    const oppositeSide = getOppositeSide(side);
+    const tron = checkTronConfirmed(side, gameState.field, oldGameState.field);
+    if (tron) {
+        return tron;
+    }
+    if (karanacyjaHappened && isUnderCheck(gameState, oppositeSide)) {
+        return { type: "mat", winner: side };
+    } else {
+        const availableOpponentMotions = getAllAvailableMotions(gameState, oppositeSide);
+        return availableOpponentMotions.length === 0 ?
+            { type: "mat", winner: side } :
+            undefined;
+    }
+}
+
+export const processMotionDetails = (gameState: GameStateSnapshot, details: MotionDetails, checkGameConclusion: boolean) => {
+    const newGameField = [...gameState.field];
+    const justMovedFigures: { [key: string]: boolean } = {};
+    details.motions.forEach((motion) => {
+        const prevPos = normalizeCoord(motion.from);
+        const newPos = normalizeCoord(motion.to);
+        justMovedFigures[gameState.field[prevPos]] = true;
+        newGameField[newPos] = newGameField[prevPos];
+        newGameField[prevPos] = 0;
+    });
+    const oppositeSide = getOppositeSide(gameState.activeSide);
+    const kniazPosition = getKniazOf(newGameField, oppositeSide);
+    let newActiveSide = oppositeSide;
+    let karanacyjaHappened = false;
+    if (kniazPosition === -1) {
+        karanacyjaHappened = true;
+        newActiveSide = gameState.activeSide;
+        const position = getKniazychOf(newGameField, oppositeSide);
+        newGameField[position] = `${oppositeSide}kz`;
+    }
+    const newFiguresMoved = {
+        ...gameState.figuresMoved,
+        ...justMovedFigures,
+    }
+    const conclusion = checkGameConclusion ? getGameConclusion(
+        {
+            ...gameState,
+            field: newGameField,
+        },
+        gameState,
+        karanacyjaHappened,
+        gameState.activeSide
+    ) : undefined;
+    return {
+        field: newGameField,
+        figuresMoved: newFiguresMoved,
+        activeSide: newActiveSide,
+        conclusion,
+    } as GameStateSnapshot;
+};
+
+export const getFiguresOf = (gameField: GameField, side: Side): number[] => {
+    const result = [];
+    for (let i = 0; i < gameField.length; i++) {
+        const entry = gameField[i];
+        if (typeof entry === "string" && getSide(entry) === side) {
+            result.push(i);
+        }
+    }
+    return result;
+};
+
+export const getAllAvailableMotions = (gameState: GameStateSnapshot, side: Side) => {
+    const oppFigures = getFiguresOf(gameState.field, side);
+    return oppFigures.flatMap(
+        oppPosition => {
+            const oppCoordinate = denormalizeCoord(oppPosition);
+            return getAvailableMotions(gameState, oppCoordinate, false);
+        }
+    );
+};
+
+export const isPositionAttacked = (gameState: GameStateSnapshot, side: Side, position: number) => {
+    if (position !== -1) {
+        const oppFigures = getFiguresOf(gameState.field, getOppositeSide(side));
+        return oppFigures.find(
+            oppPosition => {
+                const oppCoordinate = denormalizeCoord(oppPosition);
+                const oppMotions = getAvailableMotions(gameState, oppCoordinate, true);
+                return oppMotions.find(motion => {
+                    return normalizeCoord(motion) === position;
+                });
+            }
+        )
+    }
+    return false;
+}
+
+export const isUnderRokash = (gameState: GameStateSnapshot, side: Side) => {
+    const tronValue = gameState.field[TRON_POSITION];
+    if (typeof tronValue !== "string") {
+        return false;
+    }
+    return getSide(tronValue) === side &&
+        isPositionAttacked(gameState, side, TRON_POSITION);
+};
+
+export const isUnderCheck = (gameState: GameStateSnapshot, side: Side) => {
+    const kniazhychPosition = getKniazychOf(gameState.field, side);
+    if (kniazhychPosition !== -1) {
+        return false;
+    }
+    const kniazPosition = getKniazOf(gameState.field, side);
+    return isPositionAttacked(gameState, side, kniazPosition);
+};
+
+export const onTron = (gameField: GameField, side: Side) => {
+    return [`${side}kz`, `${side}kc`].includes(gameField[TRON_POSITION].toString());
+};
+
+export const onUnattackedTron = (gameState: GameStateSnapshot, side: Side) => {
+    if (!onTron(gameState.field, side)) {
+        return false;
+    }
+    return !isPositionAttacked(gameState, side, TRON_POSITION);
+};
+
+export const getAvailableMotions = (gameState: GameStateSnapshot, from: Coordinate, checkAttack: boolean) => {
+    const { field, figuresMoved } = gameState;
+    const figureId = field[normalizeCoord(from)] as string;
+    const denormalizedBoard = chunk(field, BOARD_SIZE);
+    const [figureType] = figureId.split("-");
+    const rules = figuresToRules[figureType];
+    const availableMotions = rules(denormalizedBoard, figuresMoved, from, checkAttack);
+    return checkAttack ?
+        availableMotions :
+        availableMotions.filter(to => {
+            const outcomes = getMotionsDetails(field, from, to);
+            const newGameState = processMotionDetails(gameState, outcomes, false);
+            const invalidRakirouka = outcomes.beatenFields.find((coord) => {
+                return isPositionAttacked(newGameState, getSide(figureId), normalizeCoord(coord));
+            });
+            if (invalidRakirouka) {
+                return false;
+            }
+            const activeSide = getSide(figureId);
+            const underCheck = isUnderCheck(newGameState, activeSide);
+            const underRokash = isUnderRokash(newGameState, activeSide);
+            const opponentOnUnattackedTron = onUnattackedTron(newGameState, getOppositeSide(activeSide));
+            const checkKaranacyja = getKniazOf(newGameState.field, activeSide) === -1;
+            if (underCheck || underRokash || checkKaranacyja || opponentOnUnattackedTron) {
+                return false;
+            }
+            return true;
+        });
+};
+
+export const isMotionValid = (gameState: GameStateSnapshot, from: Coordinate, to: Coordinate) => {
+    const { field, activeSide, figuresMoved } = gameState;
+    const figureId = field[normalizeCoord(from)] as string;
+    const side = getSide(figureId);
+    if (side !== activeSide) {
+        return false;
+    }
+    if (from.x === to.x && from.y === to.y) {
+        return false;
+    }
+    const denormalizedBoard = chunk(field, BOARD_SIZE);
+    if (!isValidDestination(side, denormalizedBoard, to)) {
+        return false;
+    }
+    const availableMotions = getAvailableMotions(gameState, from, false);
+    if (!availableMotions.find(({ x, y }) => x === to.x && y === to.y)) {
+        return false;
+    }
+    return true;
+}
