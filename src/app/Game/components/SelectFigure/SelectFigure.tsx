@@ -1,4 +1,5 @@
 import React from "react";
+import { getSide } from "src/data/game/domain";
 import { FigureRenderer } from "../Figure/Figure";
 import * as Styles from "./SelectFigure.styles";
 
@@ -14,7 +15,7 @@ export const SelectFigureComponent = ({ selectingFigures, onFigureSelected }: Pr
                 <FigureRenderer
                     onClick={() => { onFigureSelected(figureId); }}
                     key={figureId}
-                    white
+                    white={getSide(figureId) === "w"}
                     enabled
                     cell={figureId}
                 />

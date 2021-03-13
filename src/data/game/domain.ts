@@ -87,10 +87,11 @@ export const normalGame = flatMap([
 ]);
 
 type Motion = { from: Coordinate; to: Coordinate };
-type Transformation = { position: Coordinate; toId: string };
+type Promotion = { position: number; figureId: string };
 
 export interface MotionDetails {
     motions: Motion[];
+    promotions: Promotion[];
     beatenFields: Coordinate[];
 }
 
@@ -104,6 +105,7 @@ export interface GameStateSnapshot {
     conclusion?: GameConclusion;
     promotion?: { position: number, side: Side };
     field: GameField;
+    karanacyjaHappened: boolean;
     activeSide: Side;
     figuresMoved: FiguresMoved;
 };
@@ -141,7 +143,7 @@ export const getMotionsDetails = (board: GameField, from: Coordinate, to: Coordi
             to: { x: laddziaX + (dx > 0 ? -2 : 2), y: from.y },
         });
     }
-    return { motions, beatenFields };
+    return { motions, beatenFields, promotions: [] };
 };
 
 export const getMissingFigures = (gameField: GameField, side: Side) => {
@@ -170,13 +172,26 @@ export const getMissingFigures = (gameField: GameField, side: Side) => {
     
 };
 
+// check tron
+// export const defaultGameState: GameStateSnapshot = {"field":["wl-1","wv-1","wg-1","wgt",0,"wkc","wv-2",0,"wl-2","wr-1","wr-2","wr-3",0,"wr-5","wr-6","wr-7","wr-8","wg-2",0,0,0,0,0,0,0,0,"wr-9",0,0,0,"wr-4","wkz",0,0,0,0,"br-1",0,"bv-1",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"br-2","br-3","br-4","br-5","br-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","bgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true},"activeSide":"w"};
+
 // check test 2
-export const defaultGameState = {"field":[0,"wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wl-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,0,0,"wr-5",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,"bl-1","br-2","br-3","bkz","br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"],"figuresMoved":{"wgt":true,"bkz":true,"wr-5":true},"activeSide":"b"};
+// export const defaultGameState = {"field":[0,"wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wl-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,0,0,"wr-5",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,"bl-1","br-2","br-3","bkz","br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"],"figuresMoved":{"wgt":true,"bkz":true,"wr-5":true},"activeSide":"b"};
+
+// promotion no figures
+// export const defaultGameState: GameStateSnapshot = {"field":["wl-1","wv-1","wg-1","wgt",0,"wkc","wv-2",0,"wl-2","wr-1","wr-2","wr-3",0,"wr-5",0,"wr-7","wr-8","wg-2",0,0,0,0,0,0,0,0,"wr-9",0,0,0,"wr-4","wkz",0,0,0,0,"br-1",0,"bv-1",0,0,0,0,0,0,0,"br-2",0,0,0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","bgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true},"activeSide":"w"};
+
+// promotion mat figures
+// export const defaultGameState: GameStateSnapshot = {karanacyjaHappened: false, "field":["wl-1","wv-1","wg-1",0,0,"wkc","wv-2",0,"wl-2","wr-1","wr-2","wr-3",0,"wr-5",0,"wr-7","wr-8","wg-2",0,0,0,"bv-1",0,0,0,0,"wr-9",0,0,0,"wr-4","wkz",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,0,"br-2",0,0,0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","bgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true},"activeSide":"w"}
+
+// promotion rokash
+// export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":["wl-1","wv-1","wg-1",0,"wkc",0,"wv-2",0,"wl-2",0,"wr-2","wr-3",0,"wr-5",0,"wr-7","wr-8","wg-2","wr-1",0,0,0,"wkz",0,0,0,"wr-9",0,0,0,0,0,0,0,0,0,"br-1",0,"bv-1","wr-4","bkz",0,0,0,0,0,"br-2",0,0,0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bgt",0,"bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true,"bkz":true,"wkc":true,"bgt":true,"wr-1":true},"activeSide":"w"};
+
+// promotion tron
+export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":[0,"wv-1","wg-1",0,0,"wl-2",0,0,0,"wl-1","wr-2",0,"br-7",0,0,"wr-7","wr-8","wg-2","wr-1",0,"wr-3",0,0,0,0,0,0,"bv-1",0,0,0,0,0,0,0,0,"br-1","br-2",0,"wr-4",0,0,"wkz",0,"wr-9",0,0,0,"bkz",0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6",0,"br-8","br-9","bl-1","bg-1",0,"bkc",0,"wgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true,"bkz":true,"wkc":true,"bgt":true,"wr-1":true,"wr-3":true,"wv-2":true,"br-7":true,"wr-5":true,"wl-2":true,"wl-1":true},"activeSide":"b"};
 
 // export const defaultGameState: GameStateSnapshot = {
-//     // gameField: normalGame,
-//     // field: matTest,
-//     field: checkTest2,
+//     field: normalGame,
 //     activeSide: "w",
 //     figuresMoved: {},
 //     conclusion: undefined,
@@ -397,10 +412,20 @@ export const figuresToRules: { [key: string]: FigureStrategy } = {
     bkz: kniaz,
 };
 
-export const hasRatnikToPromote = (gameField: GameField, side: Side) => {
+export const getRatnikPositionToPromote = (gameField: GameField, side: Side) => {
     const rowIndex = side === "w" ? BOARD_SIZE - 1 : 0;
     const row = chunk(gameField, BOARD_SIZE)[rowIndex];
-    return row.find(f => f.toString().indexOf(`${side}r`) === 0)
+    const colIndex = row.findIndex(f => f.toString().indexOf(`${side}r`) === 0);
+    if (colIndex === -1) {
+        return -1;
+    } else {
+        return rowIndex * BOARD_SIZE + colIndex;
+    }
+};
+
+export const hasRatnikToPromote = (gameField: GameField, side: Side) => {
+    const position = getRatnikPositionToPromote(gameField, side);
+    return position !== -1;
 };
 
 export const checkTronConfirmed = (
@@ -417,7 +442,6 @@ export const checkTronConfirmed = (
 export const getGameConclusion = (
     gameState: GameStateSnapshot,
     oldGameState: GameStateSnapshot,
-    karanacyjaHappened: boolean,
     side: Side
 ): GameConclusion | undefined => {
     const oppositeSide = getOppositeSide(side);
@@ -425,7 +449,7 @@ export const getGameConclusion = (
     if (tron) {
         return tron;
     }
-    if (karanacyjaHappened && isUnderCheck(gameState, oppositeSide)) {
+    if (gameState.karanacyjaHappened && isUnderCheck(gameState, oppositeSide)) {
         return { type: "mat", winner: side };
     } else {
         const availableOpponentMotions = getAllAvailableMotions(gameState, oppositeSide);
@@ -435,7 +459,7 @@ export const getGameConclusion = (
     }
 }
 
-export const processMotionDetails = (gameState: GameStateSnapshot, details: MotionDetails, checkGameConclusion: boolean) => {
+export const computeNewGameState = (gameState: GameStateSnapshot, details: MotionDetails): GameStateSnapshot => {
     const newGameField = [...gameState.field];
     const justMovedFigures: { [key: string]: boolean } = {};
     details.motions.forEach((motion) => {
@@ -445,9 +469,12 @@ export const processMotionDetails = (gameState: GameStateSnapshot, details: Moti
         newGameField[newPos] = newGameField[prevPos];
         newGameField[prevPos] = 0;
     });
+    details.promotions.forEach((promotion) => {
+        newGameField[promotion.position] = promotion.figureId;
+    });
     const oppositeSide = getOppositeSide(gameState.activeSide);
-    const kniazPosition = getKniazOf(newGameField, oppositeSide);
     let newActiveSide = oppositeSide;
+    const kniazPosition = getKniazOf(newGameField, oppositeSide);
     let karanacyjaHappened = false;
     if (kniazPosition === -1) {
         karanacyjaHappened = true;
@@ -458,22 +485,18 @@ export const processMotionDetails = (gameState: GameStateSnapshot, details: Moti
     const newFiguresMoved = {
         ...gameState.figuresMoved,
         ...justMovedFigures,
-    }
-    const conclusion = checkGameConclusion ? getGameConclusion(
-        {
-            ...gameState,
-            field: newGameField,
-        },
-        gameState,
-        karanacyjaHappened,
-        gameState.activeSide
-    ) : undefined;
+    };
     return {
+        ...gameState,
+        karanacyjaHappened,
         field: newGameField,
         figuresMoved: newFiguresMoved,
         activeSide: newActiveSide,
-        conclusion,
-    } as GameStateSnapshot;
+    }
+}
+
+export const needKaranacyja = ({ field, activeSide}: GameStateSnapshot) => {
+    return getKniazOf(field, getOppositeSide(activeSide)) === -1;
 };
 
 export const getFiguresOf = (gameField: GameField, side: Side): number[] => {
@@ -535,11 +558,32 @@ export const onTron = (gameField: GameField, side: Side) => {
     return [`${side}kz`, `${side}kc`].includes(gameField[TRON_POSITION].toString());
 };
 
-export const onUnattackedTron = (gameState: GameStateSnapshot, side: Side) => {
+export const onUnattackedTron = (gameState: GameStateSnapshot, oldGameState: GameStateSnapshot, side: Side) => {
     if (!onTron(gameState.field, side)) {
         return false;
     }
-    return !isPositionAttacked(gameState, side, TRON_POSITION);
+    if (isPositionAttacked(gameState, side, TRON_POSITION)) {
+        return false;
+    }
+    const oppositeSide = getOppositeSide(side);
+    const canPromoteInOneStep = hasRatnikToPromote(gameState.field, oppositeSide) && !hasRatnikToPromote(oldGameState.field, oppositeSide);
+    if (canPromoteInOneStep) {
+        const missingFigures = getMissingFigures(gameState.field, oppositeSide);
+        const promotePosition = getRatnikPositionToPromote(gameState.field, oppositeSide);
+        for (const figure of missingFigures) {
+            const fieldWithPromotion = gameState.field.concat();
+            fieldWithPromotion[promotePosition] = figure;
+            const gameStateWithPromotion = {
+                ...gameState,
+                field: fieldWithPromotion,
+            }
+            if (isPositionAttacked(gameStateWithPromotion, side, TRON_POSITION)) {
+                return false;
+            }
+        }
+    }
+            
+    return true;
 };
 
 export const getAvailableMotions = (gameState: GameStateSnapshot, from: Coordinate, checkAttack: boolean) => {
@@ -553,17 +597,17 @@ export const getAvailableMotions = (gameState: GameStateSnapshot, from: Coordina
         availableMotions :
         availableMotions.filter(to => {
             const outcomes = getMotionsDetails(field, from, to);
-            const newGameState = processMotionDetails(gameState, outcomes, false);
+            const newGameState = computeNewGameState(gameState, outcomes);
+            const activeSide = getSide(figureId);
             const invalidRakirouka = outcomes.beatenFields.find((coord) => {
                 return isPositionAttacked(newGameState, getSide(figureId), normalizeCoord(coord));
             });
             if (invalidRakirouka) {
                 return false;
             }
-            const activeSide = getSide(figureId);
             const underCheck = isUnderCheck(newGameState, activeSide);
             const underRokash = isUnderRokash(newGameState, activeSide);
-            const opponentOnUnattackedTron = onUnattackedTron(newGameState, getOppositeSide(activeSide));
+            const opponentOnUnattackedTron = onUnattackedTron(newGameState, gameState, getOppositeSide(activeSide));
             const checkKaranacyja = getKniazOf(newGameState.field, activeSide) === -1;
             if (underCheck || underRokash || checkKaranacyja || opponentOnUnattackedTron) {
                 return false;

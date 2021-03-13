@@ -3,7 +3,7 @@ import { useHandler } from "react-use-handler";
 import { useDispatch, useSelector } from "react-redux";
 import * as Styles from "./Game.styles";
 import { range } from "lodash";
-import { resetGame, initialState, State as AppGameState, requestMotion } from "src/data/game/slice";
+import { resetGame, initialState, State as AppGameState, requestMotion, selectFigure } from "src/data/game/slice";
 import { RootState } from "src/data/store";
 import { BOARD_SIZE, Coordinate, getAvailableMotions, denormalizeCoord, getSide, normalizeCoord, Side, isMotionValid, getMissingFigures } from "src/data/game/domain";
 import { SelectFigure } from "./components";
@@ -59,7 +59,6 @@ export const Game = () => {
             return;
         }
         const suggestions = getAvailableMotions(gameState, from, false);
-        console.log("suggestions:", suggestions);
         setHighlights([figureCell, ...suggestions.map(normalizeCoord)]);
     })
     const onMotionRequest = useHandler((from: Coordinate, to: Coordinate) => {
@@ -89,12 +88,10 @@ export const Game = () => {
         }
     });
     const onFigureSelected = useHandler((figureId: string) => {
-        // const newGameField = gameField.concat();
-        // newGameField[promotePosition] = figureId;
-        // setGameField(newGameField);
-        // setSelectingFigures(undefined);
-        // setActiveSide(getOppositeSide(activeSide));
-        // const [newGameField, newFiguresMoved] = processMotionOutcomes(board, figuresMoved, activeSide, outcomes, false);
+        dispatch(selectFigure({
+          position: state.gameState.promotion?.position!,
+          figureId,
+        }));
     });
     const reverseBoard = displaySide === "w";
     const cellNumeration = range(0, BOARD_SIZE);

@@ -1,15 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Coordinate, defaultGameState, isMotionValid, GameStateSnapshot, hasRatnikToPromote, normalizeCoord, processMotionDetails, getMissingFigures, MotionDetails, getMotionsDetails } from "./domain";
+import { Coordinate, defaultGameState, isMotionValid, GameStateSnapshot, hasRatnikToPromote, normalizeCoord, getMissingFigures, MotionDetails, getMotionsDetails, computeNewGameState, getGameConclusion, needKaranacyja } from "./domain";
 
 export interface State {
     gameState: GameStateSnapshot,
-    previousState: GameStateSnapshot,
     history: any[],
 }
 
 export const initialState = {
     gameState: defaultGameState,
-    previousState: defaultGameState,
     history: [],
 } as State;
 
@@ -23,23 +21,39 @@ export const gameSlice = createSlice({
         requestMotion: (state, { payload }: PayloadAction<{ from: Coordinate, to: Coordinate }>) => {
             const { from, to } = payload;
             const { gameState } = state;
-            const result = getMotionsDetails(gameState.field, from, to);
+            const details = getMotionsDetails(gameState.field, from, to);
             const motionInitiator = gameState.activeSide;
-            const newGameState = processMotionDetails(gameState, result, true);
-            if (hasRatnikToPromote(newGameState.field, motionInitiator) && !hasRatnikToPromote(gameState.field, motionInitiator)) {
-                if (getMissingFigures(newGameState.field, gameState.activeSide).length > 0) {
-                    gameState.promotion = {
-                        position: normalizeCoord(to),
-                        side: gameState.activeSide,
-                    };
-                    gameState.field = newGameState.field;
-                }
+            const newGameState = computeNewGameState(gameState, details);
+            newGameState.conclusion = getGameConclusion(
+                newGameState,
+                gameState,
+                gameState.activeSide
+            );
+            const canPromoteInOneStep = hasRatnikToPromote(newGameState.field, motionInitiator) && !hasRatnikToPromote(gameState.field, motionInitiator);
+            const hasMissingFigures = getMissingFigures(newGameState.field, gameState.activeSide).length > 0;
+            if (canPromoteInOneStep && hasMissingFigures) {
+                gameState.promotion = {
+                    position: normalizeCoord(to),
+                    side: gameState.activeSide,
+                };
+                gameState.field = newGameState.field;
+                gameState.karanacyjaHappened = newGameState.karanacyjaHappened;
             } else {
                 state.gameState = newGameState;
             }
         },
-        selectFigure: (state) => {
-
+        selectFigure: (state, { payload: { position, figureId } }: PayloadAction<{ position: number, figureId: string }>) => {
+            const details: MotionDetails = {
+                beatenFields: [],
+                motions: [],
+                promotions: [{ position, figureId }]
+            };
+            const activeSide = state.gameState.activeSide;
+            const newGameState = computeNewGameState(state.gameState, details);
+            newGameState.karanacyjaHappened = state.gameState.karanacyjaHappened;
+            newGameState.promotion = undefined;
+            newGameState.conclusion = getGameConclusion(newGameState, state.gameState, activeSide);
+            state.gameState = newGameState;
         }
     }
 });
