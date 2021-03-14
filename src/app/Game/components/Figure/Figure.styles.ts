@@ -8,6 +8,7 @@ const figureFontSize = createScaled(50, true);
 export const FigureContainer = styled(Aquedux.div)<{  }>`
     pointer-events: none;
     display: flex;
+    user-select: none;
     align-items: center;
     justify-content: space-around;
     padding: ${createScaled(5)}px;

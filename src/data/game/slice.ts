@@ -53,7 +53,6 @@ export const gameSlice = createSlice({
             };
             const activeSide = state.gameState.activeSide;
             const newGameState = computeNewGameState(state.gameState, details);
-            newGameState.karanacyjaHappened = state.gameState.karanacyjaHappened;
             newGameState.promotion = undefined;
             newGameState.conclusion = getGameConclusion(newGameState, state.gameState, activeSide);
             state.gameState = newGameState;

@@ -41,39 +41,6 @@ export const figuresToIcons: { [key: string]: string } = {
     bkz: "\u2654",
 };
 
-export const tronTest = flatMap([
-    ["wl-1", "wg-1", "wv-1", 0, "wgt", 0, "wv-2", "wg-2", "wl-2"],
-    ["wr-1", 0, 0, 0, 0, 0, 0, 0, "wr-2"],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    // [0, 0, 0, "wkz", 0, 0, 0, 0, 0],
-    [0, "wkz", 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, "wkc", 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ["br-1", "br-2", "br-3", "br-4", "br-5", "br-6", "br-7", "br-8", "br-9"],
-    ["bl-1", "bg-1", "bv-1", "bkc", "bkz", "bgt", "bv-2", "bg-2", "bl-2"],
-]);
-
-export const checkTest = flatMap([
-    [0, 0, 0, "bv-1", 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    // [0, 0, 0, "wkz", 0, 0, 0, 0, 0],
-    [0, "wkz", 0, 0, 0, 0, "bl-1", 0, 0],
-    ["br-1", 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, "bg-1", "bg-2", 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, "bkz"],
-]);
-
-export const promotionTest = ["wl-1",0,0,0,"wkz",0,0,"wg-2","wl-2","wr-1","br-3",0,0,"wr-5","wr-6",0,"wr-8","wr-9",0,0,0,0,0,0,0,0,0,0,0,0,"wr-4","wg-1",0,"wr-7",0,0,0,0,0,0,0,0,"bv-2",0,0,0,"br-2",0,"br-4","bg-1",0,0,0,0,0,"wkc",0,0,0,0,0,"br-8",0,"br-1",0,"wr-3","br-12","br-5","br-6",0,0,"br-9",0, 0,0,0,"bkz",0,0,0,0];
-export const rakiroukaTest = ["wl-1",0,0,0,"wkz",0,"wv-2","wg-2","wl-2","wr-1",0,0,0,"wr-5","wr-6",0,"wr-8","wr-9",0,0,0,"wv-1",0,0,0,0,0,0,"wr-2","wr-3","wr-4","wg-1",0,"wr-7",0,0,0,0,0,0,0,0,"bv-2",0,0,0,"br-2","br-3","br-4","bg-1",0,0,0,0,0,"wkc",0,"bv-1",0,0,"wgt","br-8",0,"br-1",0,0,0,"br-5","br-6",0,0,"br-9","bl-1",0,0,0,"bkz",0,0,0,"bl-2"];
-export const karanacyjaTest = ["wl-1","wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wr-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9",0,0,0,0,0,0,0,0,0,0,0,0,"wgt","wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"bkz",0,0,0,0,0,0,0,0,"bkc","br-5",0, 0,0,0,"br-1","br-2","br-3","br-4",0,"br-6","br-7","br-8","br-9","bl-1","bg-1","bv-1",0,0,"bgt","bv-2","bg-2","bl-2"];
-export const matTest = [0,"wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wl-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,"wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,"bkz","br-5",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,"bl-1","br-2","br-3","bkc","br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"];
-export const checkTest2 = [0,"wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wl-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,"wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,"bkz","br-5",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,"bl-1","br-2","br-3","bkc","br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"];
-export const karanacyjaMatTest = ["wl-1","wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2",0,"wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,"wr-5",0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,"bkz","br-5",0,0,0,0,"br-1",0,0,"bkc",0,0,0,0,0,"bl-1","br-2","br-3",0,"br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"];
-
 export const normalGame = flatMap([
     ["wl-1", "wv-1", "wg-1", "wgt", "wkz", "wkc", "wv-2", "wg-2", "wl-2"],
     ["wr-1", "wr-2", "wr-3", "wr-4", "wr-5", "wr-6", "wr-7", "wr-8", "wr-9"],
@@ -171,18 +138,6 @@ export const getMissingFigures = (gameField: GameField, side: Side) => {
     );
     
 };
-
-// check tron
-// export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":["wl-1","wv-1","wg-1","wgt",0,"wkc","wv-2",0,"wl-2","wr-1","wr-2","wr-3",0,"wr-5","wr-6","wr-7","wr-8","wg-2",0,0,0,"bv-1",0,0,0,0,"wr-9",0,0,0,"wr-4",0,0,0,0,0,"br-1",0,0,0,"wkz",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"br-2","br-3","br-4","br-5","br-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","bgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true},"activeSide":"w"};
-
-// check test 2
-// export const defaultGameState = {"field":[0,"wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wl-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,0,0,"wr-5",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,"bl-1","br-2","br-3","bkz","br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"],"figuresMoved":{"wgt":true,"bkz":true,"wr-5":true},"activeSide":"b"};
-
-// promotion mat figures
-// export const defaultGameState: GameStateSnapshot = {karanacyjaHappened: false, "field":["wl-1","wv-1","wg-1",0,0,"wkc","wv-2",0,"wl-2","wr-1","wr-2","wr-3",0,"wr-5",0,"wr-7","wr-8","wg-2",0,0,0,"bv-1",0,0,0,0,"wr-9",0,0,0,"wr-4","wkz",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,0,"br-2",0,0,0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","bgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true},"activeSide":"w"}
-
-// promotion rokash
-// export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":["wl-1","wv-1","wg-1",0,"wkc",0,"wv-2",0,"wl-2",0,"wr-2","wr-3",0,"wr-5",0,"wr-7","wr-8","wg-2","wr-1",0,0,0,"wkz",0,0,0,"wr-9",0,0,0,0,0,0,0,0,0,"br-1",0,"bv-1","wr-4","bkz",0,0,0,0,0,"br-2",0,0,0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bgt",0,"bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true,"bkz":true,"wkc":true,"bgt":true,"wr-1":true},"activeSide":"w"};
 
 // promotion tron
 // export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":[0,"wv-1","wg-1",0,0,"wl-2",0,0,0,"wl-1","wr-2",0,"br-7",0,0,"wr-7","wr-8","wg-2","wr-1",0,"wr-3",0,0,0,0,0,0,"bv-1",0,0,0,0,0,0,0,0,"br-1","br-2",0,"wr-4",0,0,"wkz",0,"wr-9",0,0,0,"bkz",0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6",0,"br-8","br-9","bl-1","bg-1",0,"bkc",0,"wgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true,"bkz":true,"wkc":true,"bgt":true,"wr-1":true,"wr-3":true,"wv-2":true,"br-7":true,"wr-5":true,"wl-2":true,"wl-1":true},"activeSide":"b"};
@@ -500,6 +455,10 @@ export const computeNewGameState = (gameState: GameStateSnapshot, details: Motio
         const position = getKniazychOf(newGameField, oppositeSide);
         newGameField[position] = `${oppositeSide}kz`;
     }
+    // if we just did promotion, keep karanacyja
+    if (details.motions.length === 0) {
+        karanacyjaHappened = gameState.karanacyjaHappened;
+    }
     const newFiguresMoved = {
         ...gameState.figuresMoved,
         ...justMovedFigures,
@@ -530,7 +489,8 @@ export const getFiguresOf = (gameField: GameField, side: Side): number[] => {
 
 export const getAllAvailableMotions = (gameState: GameStateSnapshot, side: Side) => {
     const oppFigures = getFiguresOf(gameState.field, side);
-    return oppFigures.flatMap(
+    return flatMap(
+        oppFigures,
         oppPosition => {
             const oppCoordinate = denormalizeCoord(oppPosition);
             return getAvailableMotions(gameState, oppCoordinate, false);
