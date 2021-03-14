@@ -173,13 +173,10 @@ export const getMissingFigures = (gameField: GameField, side: Side) => {
 };
 
 // check tron
-// export const defaultGameState: GameStateSnapshot = {"field":["wl-1","wv-1","wg-1","wgt",0,"wkc","wv-2",0,"wl-2","wr-1","wr-2","wr-3",0,"wr-5","wr-6","wr-7","wr-8","wg-2",0,0,0,0,0,0,0,0,"wr-9",0,0,0,"wr-4","wkz",0,0,0,0,"br-1",0,"bv-1",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"br-2","br-3","br-4","br-5","br-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","bgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true},"activeSide":"w"};
+// export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":["wl-1","wv-1","wg-1","wgt",0,"wkc","wv-2",0,"wl-2","wr-1","wr-2","wr-3",0,"wr-5","wr-6","wr-7","wr-8","wg-2",0,0,0,"bv-1",0,0,0,0,"wr-9",0,0,0,"wr-4",0,0,0,0,0,"br-1",0,0,0,"wkz",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"br-2","br-3","br-4","br-5","br-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","bgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true},"activeSide":"w"};
 
 // check test 2
 // export const defaultGameState = {"field":[0,"wg-1","wv-1","wkc","wkz",0,"wv-2","wg-2","wl-2","wl-1","wr-2","wr-3","wr-4",0,"wr-6","wr-7","wr-8","wr-9","wr-1",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"wgt",0,0,0,"wr-5",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,"bl-1","br-2","br-3","bkz","br-22","br-6","br-7","br-8","br-9",0,"bg-1","br-26","br-23","br-24","bgt","br-25","bg-2","bl-2"],"figuresMoved":{"wgt":true,"bkz":true,"wr-5":true},"activeSide":"b"};
-
-// promotion no figures
-// export const defaultGameState: GameStateSnapshot = {"field":["wl-1","wv-1","wg-1","wgt",0,"wkc","wv-2",0,"wl-2","wr-1","wr-2","wr-3",0,"wr-5",0,"wr-7","wr-8","wg-2",0,0,0,0,0,0,0,0,"wr-9",0,0,0,"wr-4","wkz",0,0,0,0,"br-1",0,"bv-1",0,0,0,0,0,0,0,"br-2",0,0,0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","bgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true},"activeSide":"w"};
 
 // promotion mat figures
 // export const defaultGameState: GameStateSnapshot = {karanacyjaHappened: false, "field":["wl-1","wv-1","wg-1",0,0,"wkc","wv-2",0,"wl-2","wr-1","wr-2","wr-3",0,"wr-5",0,"wr-7","wr-8","wg-2",0,0,0,"bv-1",0,0,0,0,"wr-9",0,0,0,"wr-4","wkz",0,0,0,0,"br-1",0,0,0,0,0,0,0,0,0,"br-2",0,0,0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","bgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true},"activeSide":"w"}
@@ -190,26 +187,14 @@ export const getMissingFigures = (gameField: GameField, side: Side) => {
 // promotion tron
 // export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":[0,"wv-1","wg-1",0,0,"wl-2",0,0,0,"wl-1","wr-2",0,"br-7",0,0,"wr-7","wr-8","wg-2","wr-1",0,"wr-3",0,0,0,0,0,0,"bv-1",0,0,0,0,0,0,0,0,"br-1","br-2",0,"wr-4",0,0,"wkz",0,"wr-9",0,0,0,"bkz",0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6",0,"br-8","br-9","bl-1","bg-1",0,"bkc",0,"wgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true,"bkz":true,"wkc":true,"bgt":true,"wr-1":true,"wr-3":true,"wv-2":true,"br-7":true,"wr-5":true,"wl-2":true,"wl-1":true},"activeSide":"b"};
 
-// rte 1
-// export const defaultGameState: GameStateSnapshot = {"field":["wl-1","wv-1",0,"wgt","wkz","wkc","wv-2","wg-2","wl-2","wr-1","wr-2","wr-3","br-3","wr-5","wr-6","wr-7","wr-8","wr-9",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"br-1","br-2",0,"br-4","wr-4","br-6","br-7","br-8","br-9","bl-1","bg-1","bv-1","bkc","bkz","bgt","bg-2","bv-2","bl-2"],"activeSide":"b","figuresMoved":{"wr-4":true,"br-3":true,"wg-1":true},"karanacyjaHappened":false};
 
-// delayed promotion to rokash
-// export const defaultGameState = {"field":["wl-1","wv-1",0,"wgt","br-3",0,"wv-2","wg-2","wl-2","wr-1",0,"wr-3",0,0,"wr-6","wr-7","wr-8","wr-9",0,"wr-2",0,0,0,0,0,0,0,0,0,0,0,0,"br-6",0,0,0,0,0,0,"wkz",0,0,0,0,0,0,0,0,0,0,0,0,0,0,"br-1",0,0,0,0,0,0,"bv-1",0,0,"br-2",0,"br-4",0,0,"br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","wg-1","bg-2","bv-2","bl-2"],"activeSide":"w","figuresMoved":{"wr-4":true,"br-3":true,"wg-1":true,"bv-1":true,"wr-5":true,"wkz":true,"wr-2":true,"br-1":true,"br-6":true},"karanacyjaHappened":false}
-
-// delayed promotion to rokash no figures
-// export const defaultGameState = {"field":["wl-1","wv-1",0,"wgt","br-3",0,"wv-2","wg-2","wl-2","wr-1",0,"wr-3",0,0,"wr-6","wr-7","wr-8","wr-9",0,"wr-2",0,0,0,0,0,0,0,0,0,0,0,0,"br-6",0,0,0,0,0,0,"wkz",0,"br-5",0,0,0,0,0,0,0,0,0,0,0,0,"br-1",0,0,0,0,0,0,"bv-1",0,0,"br-2",0,0,0,0,"br-7","br-8","br-9","bl-1",0,0,"bkc","bkz","bl-2",0,"bv-2","bgt"],"activeSide":"w","figuresMoved":{"wr-4":true,"br-3":true,"wg-1":true,"bv-1":true,"wr-5":true,"wkz":true,"wr-2":true,"br-1":true,"br-6":true},"karanacyjaHappened":false};
-
-// delayed promotion to rokash filter figures
-export const defaultGameState = {"field":["wl-1","wv-1",0,"wgt","br-3",0,"wv-2","wg-2","wl-2","wr-1",0,"wr-3",0,0,"wr-6","wr-7","wr-8","wr-9",0,"wr-2",0,0,0,0,0,0,0,0,0,0,0,0,"br-6",0,0,0,0,0,0,"wkz",0,"br-5",0,0,0,0,0,0,0,0,0,0,0,0,"br-1",0,0,0,0,0,0,"bv-1",0,0,"br-2",0,0,0,0,"br-7","br-8","br-9",0,0,0,"bkc","bkz","bl-2",0,"bv-2","bgt"],"activeSide":"w","figuresMoved":{"wr-4":true,"br-3":true,"wg-1":true,"bv-1":true,"wr-5":true,"wkz":true,"wr-2":true,"br-1":true,"br-6":true},"karanacyjaHappened":false};
-
-
-// export const defaultGameState: GameStateSnapshot = {
-//     field: normalGame,
-//     activeSide: "w",
-//     figuresMoved: {},
-//     karanacyjaHappened: false,
-//     conclusion: undefined,
-// };
+export const defaultGameState: GameStateSnapshot = {
+    field: normalGame,
+    activeSide: "w",
+    figuresMoved: {},
+    karanacyjaHappened: false,
+    conclusion: undefined,
+};
 
 export const getSide = (figure: string): Side => {
   return figure.charAt(0) as Side;

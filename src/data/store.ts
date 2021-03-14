@@ -1,12 +1,13 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit'
+import { configureStore } from '@reduxjs/toolkit'
 import reducer from "./reducer";
 
 export type RootState = ReturnType<typeof reducer>;
 
-export const createApplicationStore = () => {
+export const createApplicationStore = (preloadedState: RootState | undefined) => {
     const store = configureStore({
         reducer,
         devTools: true,
+        preloadedState,
         // middleware: window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
     });
 
