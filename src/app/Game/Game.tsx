@@ -3,7 +3,7 @@ import { useHandler } from "react-use-handler";
 import { useDispatch, useSelector } from "react-redux";
 import * as Styles from "./Game.styles";
 import { range } from "lodash";
-import { resetGame, initialState, State as AppGameState, requestMotion, selectFigure } from "src/data/game/slice";
+import { resetGame, initialState, State as AppGameState, requestMotion, selectFigure, startPromotion } from "src/data/game/slice";
 import { RootState } from "src/data/store";
 import { BOARD_SIZE, Coordinate, getAvailableMotions, denormalizeCoord, getSide, normalizeCoord, Side, isMotionValid, getMissingFigures } from "src/data/game/domain";
 import { SelectFigure } from "./components";
@@ -55,6 +55,16 @@ export const Game = () => {
         selectedCell.current = -1;
         const figureCell = normalizeCoord(from);
         const figureId = gameState.field[figureCell] as string;
+        const whitePromotion = from.y === BOARD_SIZE - 1 && figureId.startsWith("wr");
+        const blackPromotion = from.y === 0 && figureId.startsWith("br");
+
+        if (whitePromotion || blackPromotion) {
+            const figureSide = getSide(figureId);
+            if (gameState.activeSide === figureSide && getMissingFigures(gameState.field, figureSide).length > 0) {
+                dispatch(startPromotion({ position: figureCell }));
+                return;
+            }
+        }
         if (getSide(figureId) !== gameState.activeSide) {
             return;
         }

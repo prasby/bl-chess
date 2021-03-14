@@ -18,6 +18,9 @@ export const gameSlice = createSlice({
         resetGame: (state, { payload }: PayloadAction<State>) => {
             return payload;
         },
+        startPromotion: (state, { payload }: PayloadAction<{ position: number }>) => {
+            state.gameState.promotion = { side: state.gameState.activeSide, position: payload.position }
+        },
         requestMotion: (state, { payload }: PayloadAction<{ from: Coordinate, to: Coordinate }>) => {
             const { from, to } = payload;
             const { gameState } = state;
@@ -58,6 +61,6 @@ export const gameSlice = createSlice({
     }
 });
 
-export const { resetGame, requestMotion, selectFigure } = gameSlice.actions;
+export const { resetGame, requestMotion, selectFigure, startPromotion } = gameSlice.actions;
 
 export const { reducer } = gameSlice;

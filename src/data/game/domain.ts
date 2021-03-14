@@ -188,12 +188,26 @@ export const getMissingFigures = (gameField: GameField, side: Side) => {
 // export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":["wl-1","wv-1","wg-1",0,"wkc",0,"wv-2",0,"wl-2",0,"wr-2","wr-3",0,"wr-5",0,"wr-7","wr-8","wg-2","wr-1",0,0,0,"wkz",0,0,0,"wr-9",0,0,0,0,0,0,0,0,0,"br-1",0,"bv-1","wr-4","bkz",0,0,0,0,0,"br-2",0,0,0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6","br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bgt",0,"bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true,"bkz":true,"wkc":true,"bgt":true,"wr-1":true},"activeSide":"w"};
 
 // promotion tron
-export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":[0,"wv-1","wg-1",0,0,"wl-2",0,0,0,"wl-1","wr-2",0,"br-7",0,0,"wr-7","wr-8","wg-2","wr-1",0,"wr-3",0,0,0,0,0,0,"bv-1",0,0,0,0,0,0,0,0,"br-1","br-2",0,"wr-4",0,0,"wkz",0,"wr-9",0,0,0,"bkz",0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6",0,"br-8","br-9","bl-1","bg-1",0,"bkc",0,"wgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true,"bkz":true,"wkc":true,"bgt":true,"wr-1":true,"wr-3":true,"wv-2":true,"br-7":true,"wr-5":true,"wl-2":true,"wl-1":true},"activeSide":"b"};
+// export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":[0,"wv-1","wg-1",0,0,"wl-2",0,0,0,"wl-1","wr-2",0,"br-7",0,0,"wr-7","wr-8","wg-2","wr-1",0,"wr-3",0,0,0,0,0,0,"bv-1",0,0,0,0,0,0,0,0,"br-1","br-2",0,"wr-4",0,0,"wkz",0,"wr-9",0,0,0,"bkz",0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6",0,"br-8","br-9","bl-1","bg-1",0,"bkc",0,"wgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true,"bkz":true,"wkc":true,"bgt":true,"wr-1":true,"wr-3":true,"wv-2":true,"br-7":true,"wr-5":true,"wl-2":true,"wl-1":true},"activeSide":"b"};
+
+// rte 1
+// export const defaultGameState: GameStateSnapshot = {"field":["wl-1","wv-1",0,"wgt","wkz","wkc","wv-2","wg-2","wl-2","wr-1","wr-2","wr-3","br-3","wr-5","wr-6","wr-7","wr-8","wr-9",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"br-1","br-2",0,"br-4","wr-4","br-6","br-7","br-8","br-9","bl-1","bg-1","bv-1","bkc","bkz","bgt","bg-2","bv-2","bl-2"],"activeSide":"b","figuresMoved":{"wr-4":true,"br-3":true,"wg-1":true},"karanacyjaHappened":false};
+
+// delayed promotion to rokash
+// export const defaultGameState = {"field":["wl-1","wv-1",0,"wgt","br-3",0,"wv-2","wg-2","wl-2","wr-1",0,"wr-3",0,0,"wr-6","wr-7","wr-8","wr-9",0,"wr-2",0,0,0,0,0,0,0,0,0,0,0,0,"br-6",0,0,0,0,0,0,"wkz",0,0,0,0,0,0,0,0,0,0,0,0,0,0,"br-1",0,0,0,0,0,0,"bv-1",0,0,"br-2",0,"br-4",0,0,"br-7","br-8","br-9","bl-1","bg-1",0,"bkc","bkz","wg-1","bg-2","bv-2","bl-2"],"activeSide":"w","figuresMoved":{"wr-4":true,"br-3":true,"wg-1":true,"bv-1":true,"wr-5":true,"wkz":true,"wr-2":true,"br-1":true,"br-6":true},"karanacyjaHappened":false}
+
+// delayed promotion to rokash no figures
+// export const defaultGameState = {"field":["wl-1","wv-1",0,"wgt","br-3",0,"wv-2","wg-2","wl-2","wr-1",0,"wr-3",0,0,"wr-6","wr-7","wr-8","wr-9",0,"wr-2",0,0,0,0,0,0,0,0,0,0,0,0,"br-6",0,0,0,0,0,0,"wkz",0,"br-5",0,0,0,0,0,0,0,0,0,0,0,0,"br-1",0,0,0,0,0,0,"bv-1",0,0,"br-2",0,0,0,0,"br-7","br-8","br-9","bl-1",0,0,"bkc","bkz","bl-2",0,"bv-2","bgt"],"activeSide":"w","figuresMoved":{"wr-4":true,"br-3":true,"wg-1":true,"bv-1":true,"wr-5":true,"wkz":true,"wr-2":true,"br-1":true,"br-6":true},"karanacyjaHappened":false};
+
+// delayed promotion to rokash filter figures
+export const defaultGameState = {"field":["wl-1","wv-1",0,"wgt","br-3",0,"wv-2","wg-2","wl-2","wr-1",0,"wr-3",0,0,"wr-6","wr-7","wr-8","wr-9",0,"wr-2",0,0,0,0,0,0,0,0,0,0,0,0,"br-6",0,0,0,0,0,0,"wkz",0,"br-5",0,0,0,0,0,0,0,0,0,0,0,0,"br-1",0,0,0,0,0,0,"bv-1",0,0,"br-2",0,0,0,0,"br-7","br-8","br-9",0,0,0,"bkc","bkz","bl-2",0,"bv-2","bgt"],"activeSide":"w","figuresMoved":{"wr-4":true,"br-3":true,"wg-1":true,"bv-1":true,"wr-5":true,"wkz":true,"wr-2":true,"br-1":true,"br-6":true},"karanacyjaHappened":false};
+
 
 // export const defaultGameState: GameStateSnapshot = {
 //     field: normalGame,
 //     activeSide: "w",
 //     figuresMoved: {},
+//     karanacyjaHappened: false,
 //     conclusion: undefined,
 // };
 
@@ -239,6 +253,9 @@ const whiteRatnik: FigureStrategy = (board, figuresMoved, { x, y }) => {
 const blackRatnik: FigureStrategy = (board, figuresMoved, { x, y }) => {
     const positions: Coordinate[] = [];
     const nextY = y - 1;
+    if (nextY < 0) {
+        return positions;
+    }
     if (board[nextY][x] === 0 && !isTron({ x, y: nextY })) {
         positions.push({ x, y: nextY });
         const secondNextY = y - 2;
@@ -412,6 +429,16 @@ export const figuresToRules: { [key: string]: FigureStrategy } = {
     bkz: kniaz,
 };
 
+export const getRatniksPositionToPromote = (gameField: GameField, side: Side) => {
+    const rowIndex = side === "w" ? BOARD_SIZE - 1 : 0;
+    const row = chunk(gameField, BOARD_SIZE)[rowIndex];
+    const colIndexes = row
+        .map((f, index) => f.toString().indexOf(`${side}r`) === 0 ? index : -1)
+        .filter(c => c !== -1)
+        .map(c => rowIndex * 1 + c);
+    
+};
+
 export const getRatnikPositionToPromote = (gameField: GameField, side: Side) => {
     const rowIndex = side === "w" ? BOARD_SIZE - 1 : 0;
     const row = chunk(gameField, BOARD_SIZE)[rowIndex];
@@ -421,6 +448,12 @@ export const getRatnikPositionToPromote = (gameField: GameField, side: Side) => 
     } else {
         return rowIndex * BOARD_SIZE + colIndex;
     }
+};
+
+export const canPromote = (coord: Coordinate, figureId: string, side: Side) => {
+    const rowIndex = side === "w" ? BOARD_SIZE - 1 : 0;
+    const isRatnik = figureId.toString().indexOf(`${side}r`);
+    return isRatnik && coord.y === rowIndex;
 };
 
 export const hasRatnikToPromote = (gameField: GameField, side: Side) => {
