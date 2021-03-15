@@ -133,4 +133,25 @@ describe("game conclusion", () => {
         );
         expect(conclusionW).toEqual(undefined);
     });
+
+    /// http://localhost:3000/?state=JTdCJTIyZmllbGQlMjIlM0ElNUIlMjJ3bC0xJTIyJTJDMCUyQzAlMkMlMjJ3Z3QlMjIlMkMlMjJici0zJTIyJTJDMCUyQyUyMnd2LTIlMjIlMkMlMjJ3Zy0yJTIyJTJDJTIyd2wtMiUyMiUyQzAlMkMwJTJDJTIyd3ItMyUyMiUyQzAlMkMwJTJDJTIyd3ItNiUyMiUyQyUyMndyLTclMjIlMkMwJTJDJTIyd3ItOSUyMiUyQyUyMndyLTElMjIlMkMlMjJ3ci0yJTIyJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDJTIyYnItNiUyMiUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQyUyMndreiUyMiUyQzAlMkMwJTJDMCUyQzAlMkMlMjJ3ci04JTIyJTJDJTIyYnItMSUyMiUyQzAlMkMwJTJDJTIyd3YtMSUyMiUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQyUyMmJ2LTElMjIlMkMwJTJDMCUyQyUyMmJyLTIlMjIlMkMwJTJDMCUyQzAlMkMwJTJDJTIyYnItNyUyMiUyQyUyMmJyLTglMjIlMkMlMjJici05JTIyJTJDJTIyYmwtMSUyMiUyQyUyMmJnLTElMjIlMkMwJTJDJTIyYmtjJTIyJTJDJTIyYmt6JTIyJTJDJTIyd2ctMSUyMiUyQzAlMkMlMjJidi0yJTIyJTJDJTIyYmwtMiUyMiU1RCUyQyUyMmFjdGl2ZVNpZGUlMjIlM0ElMjJ3JTIyJTJDJTIyZmlndXJlc01vdmVkJTIyJTNBJTdCJTIyd3ItNCUyMiUzQXRydWUlMkMlMjJici0zJTIyJTNBdHJ1ZSUyQyUyMndnLTElMjIlM0F0cnVlJTJDJTIyYnYtMSUyMiUzQXRydWUlMkMlMjJ3ci01JTIyJTNBdHJ1ZSUyQyUyMndreiUyMiUzQXRydWUlMkMlMjJ3ci0yJTIyJTNBdHJ1ZSUyQyUyMmJyLTElMjIlM0F0cnVlJTJDJTIyYnItNiUyMiUzQXRydWUlMkMlMjJ3di0xJTIyJTNBdHJ1ZSUyQyUyMmJyLTQlMjIlM0F0cnVlJTJDJTIyYmtjJTIyJTNBdHJ1ZSUyQyUyMndyLTElMjIlM0F0cnVlJTJDJTIyd2wtMSUyMiUzQXRydWUlMkMlMjJiZy0yJTIyJTNBdHJ1ZSUyQyUyMndyLTglMjIlM0F0cnVlJTJDJTIyYmwtMSUyMiUzQXRydWUlN0QlMkMlMjJrYXJhbmFjeWphSGFwcGVuZWQlMjIlM0FmYWxzZSU3RA==
+    it('two step promotion + rokash', () => {
+        
+
+        const gameState: GameStateSnapshot = {field:['wl-1',0,0,'wgt','br-3',0,'wv-2','wg-2','wl-2',0,0,'wr-3',0,0,'wr-6','wr-7',0,'wr-9','wr-1','wr-2',0,0,0,0,0,0,0,0,0,0,0,0,'br-6',0,0,0,0,0,0,'wkz',0,0,0,0,'wr-8','br-1',0,0,'wv-1',0,0,0,0,0,0,0,0,0,0,0,0,'bv-1',0,0,'br-2',0,0,0,0,'br-7','br-8','br-9','bl-1','bg-1',0,'bkc','bkz','wg-1',0,'bv-2','bl-2'],activeSide:'w',figuresMoved:{'wr-4':true,'br-3':true,'wg-1':true,'bv-1':true,'wr-5':true,wkz:true,'wr-2':true,'br-1':true,'br-6':true,'wv-1':true,'br-4':true,bkc:true,'wr-1':true,'wl-1':true,'bg-2':true,'wr-8':true,'bl-1':true},karanacyjaHappened:false};
+        const from = {
+            x: 3,
+            y: 4
+        };
+        const to = {
+            x: 4,
+            y: 4
+        };
+        const newGameState = computeNewGameState(
+            gameState,
+            { motions: [{ from, to }], beatenFields: [], promotions: [] },
+        );
+        const conclusion = getGameConclusion(newGameState, gameState, "w");
+        expect(conclusion).toEqual(undefined);
+    });
 })

@@ -139,9 +139,23 @@ export const getMissingFigures = (gameField: GameField, side: Side) => {
     
 };
 
-// promotion tron
-// export const defaultGameState: GameStateSnapshot = {"karanacyjaHappened":false,"field":[0,"wv-1","wg-1",0,0,"wl-2",0,0,0,"wl-1","wr-2",0,"br-7",0,0,"wr-7","wr-8","wg-2","wr-1",0,"wr-3",0,0,0,0,0,0,"bv-1",0,0,0,0,0,0,0,0,"br-1","br-2",0,"wr-4",0,0,"wkz",0,"wr-9",0,0,0,"bkz",0,0,0,0,0,0,0,"br-3",0,0,0,0,0,0,0,0,0,"br-4",0,"wr-6",0,"br-8","br-9","bl-1","bg-1",0,"bkc",0,"wgt","bg-2","bv-2","bl-2"],"figuresMoved":{"wr-4":true,"br-1":true,"wkz":true,"bv-1":true,"wr-9":true,"wg-2":true,"wr-6":true,"br-5":true,"br-3":true,"br-2":true,"wgt":true,"bkz":true,"wkc":true,"bgt":true,"wr-1":true,"wr-3":true,"wv-2":true,"br-7":true,"wr-5":true,"wl-2":true,"wl-1":true},"activeSide":"b"};
-
+// considers active
+export const getMissingFiguresToPromote = (gameState: GameStateSnapshot, position: number, side: Side) => {
+    const missingFigures = getMissingFigures(gameState.field, side);
+    const opponentOnTron = onTron(gameState.field, getOppositeSide(side));
+    return opponentOnTron ?
+        missingFigures
+            .filter(figure =>
+                targetsWhenPromotedTo(
+                    position,
+                    figure,
+                    TRON_POSITION,
+                    gameState,
+                    side
+                )
+            ) :
+        missingFigures;
+};
 
 export const defaultGameState: GameStateSnapshot = {
     field: normalGame,
@@ -392,7 +406,7 @@ export const getRatnikPositionToPromote = (gameField: GameField, side: Side) => 
 
 export const canPromote = (coord: Coordinate, figureId: string, side: Side) => {
     const rowIndex = side === "w" ? BOARD_SIZE - 1 : 0;
-    const isRatnik = figureId.toString().indexOf(`${side}r`);
+    const isRatnik = figureId.toString().indexOf(`${side}r`) !== -1;
     return isRatnik && coord.y === rowIndex;
 };
 
@@ -422,12 +436,15 @@ export const getGameConclusion = (
     if (tron) {
         return tron;
     }
+    const isOnTron = onTron(gameState.field, side);
+    const type = isOnTron ? "tron" : "mat";
     if (gameState.karanacyjaHappened && isUnderCheck(gameState, oppositeSide)) {
-        return { type: "mat", winner: side };
+        return { type, winner: side };
     } else {
         const availableOpponentMotions = getAllAvailableMotions(gameState, oppositeSide);
-        return availableOpponentMotions.length === 0 ?
-            { type: "mat", winner: side } :
+        // don't inline var, can be expensive
+        return availableOpponentMotions.length === 0 && getAllAvailablePromotions(gameState, oppositeSide).length === 0 ?
+            { type, winner: side } :
             undefined;
     }
 }
@@ -487,13 +504,35 @@ export const getFiguresOf = (gameField: GameField, side: Side): number[] => {
     return result;
 };
 
+export const getAllAvailablePromotions = (gameState: GameStateSnapshot, side: Side) => {
+    const positions = getFiguresOf(gameState.field, side)
+        .filter(pos => {
+            return canPromote(
+                denormalizeCoord(pos),
+                gameState.field[pos] as string,
+                side
+            );
+        });
+    const opponentOnTron = onTron(gameState.field, getOppositeSide(side));
+    return opponentOnTron
+        ? positions.filter(pos =>
+            canTargetWhenPromoted(
+                pos,
+                TRON_POSITION,
+                gameState,
+                side
+            )
+        )
+        : positions;
+};
+
 export const getAllAvailableMotions = (gameState: GameStateSnapshot, side: Side) => {
-    const oppFigures = getFiguresOf(gameState.field, side);
+    const figures = getFiguresOf(gameState.field, side);
     return flatMap(
-        oppFigures,
-        oppPosition => {
-            const oppCoordinate = denormalizeCoord(oppPosition);
-            return getAvailableMotions(gameState, oppCoordinate, false);
+        figures,
+        position => {
+            const coordinate = denormalizeCoord(position);
+            return getAvailableMotions(gameState, coordinate, false);
         }
     );
 };
@@ -501,6 +540,7 @@ export const getAllAvailableMotions = (gameState: GameStateSnapshot, side: Side)
 export const isPositionAttacked = (gameState: GameStateSnapshot, side: Side, position: number) => {
     if (position !== -1) {
         const oppFigures = getFiguresOf(gameState.field, getOppositeSide(side));
+        
         return oppFigures.find(
             oppPosition => {
                 const oppCoordinate = denormalizeCoord(oppPosition);
@@ -536,6 +576,43 @@ export const onTron = (gameField: GameField, side: Side) => {
     return [`${side}kz`, `${side}kc`].includes(gameField[TRON_POSITION].toString());
 };
 
+export const targetsWhenPromotedTo = (
+    promotePosition: number,
+    figure: string,
+    targetPosition: number,
+    gameState: GameStateSnapshot,
+    side: Side
+) => {
+    const fieldWithPromotion = gameState.field.concat();
+    fieldWithPromotion[promotePosition] = figure;
+    const gameStateWithPromotion = {
+        ...gameState,
+        field: fieldWithPromotion,
+    }
+    return isPositionAttacked(gameStateWithPromotion, getOppositeSide(side), targetPosition);
+}
+
+export const canTargetWhenPromoted = (
+    promotePosition: number,
+    targetPosition: number,
+    gameState: GameStateSnapshot,
+    side: Side
+) => {
+    const missingFigures = getMissingFigures(gameState.field, side);
+    for (const figure of missingFigures) {
+        if (targetsWhenPromotedTo(
+            promotePosition,
+            figure,
+            targetPosition,
+            gameState,
+            side,
+        )) {
+            return true;
+        }
+    }
+    return false;
+};
+
 export const onUnattackedTron = (gameState: GameStateSnapshot, oldGameState: GameStateSnapshot, side: Side) => {
     if (!onTron(gameState.field, side)) {
         return false;
@@ -546,19 +623,13 @@ export const onUnattackedTron = (gameState: GameStateSnapshot, oldGameState: Gam
     const oppositeSide = getOppositeSide(side);
     const canPromoteInOneStep = hasRatnikToPromote(gameState.field, oppositeSide) && !hasRatnikToPromote(oldGameState.field, oppositeSide);
     if (canPromoteInOneStep) {
-        const missingFigures = getMissingFigures(gameState.field, oppositeSide);
         const promotePosition = getRatnikPositionToPromote(gameState.field, oppositeSide);
-        for (const figure of missingFigures) {
-            const fieldWithPromotion = gameState.field.concat();
-            fieldWithPromotion[promotePosition] = figure;
-            const gameStateWithPromotion = {
-                ...gameState,
-                field: fieldWithPromotion,
-            }
-            if (isPositionAttacked(gameStateWithPromotion, side, TRON_POSITION)) {
-                return false;
-            }
-        }
+        return !canTargetWhenPromoted(
+            promotePosition,
+            TRON_POSITION,
+            gameState,
+            oppositeSide,
+        );
     }
             
     return true;

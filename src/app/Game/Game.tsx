@@ -5,7 +5,7 @@ import * as Styles from "./Game.styles";
 import { range } from "lodash";
 import { resetGame, initialState, State as AppGameState, requestMotion, selectFigure, startPromotion } from "src/data/game/slice";
 import { RootState } from "src/data/store";
-import { BOARD_SIZE, Coordinate, getAvailableMotions, denormalizeCoord, getSide, normalizeCoord, Side, isMotionValid, getMissingFigures } from "src/data/game/domain";
+import { BOARD_SIZE, Coordinate, getAvailableMotions, denormalizeCoord, getSide, normalizeCoord, Side, isMotionValid, getMissingFiguresToPromote, getMissingFigures } from "src/data/game/domain";
 import { SelectFigure } from "./components";
 import { Figure } from "./components/Figure";
 
@@ -167,7 +167,7 @@ export const Game = ({ displaySide }: Props) => {
                         <Styles.NotificationsLayer isEnabled>
                             <SelectFigure
                                 onFigureSelected={onFigureSelected}
-                                selectingFigures={getMissingFigures(gameState.field, gameState.promotion.side)}
+                                selectingFigures={getMissingFiguresToPromote(gameState, gameState.promotion.position, gameState.promotion.side)}
                             />
                         </Styles.NotificationsLayer>
                     )}
