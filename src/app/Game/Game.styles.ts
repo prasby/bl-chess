@@ -74,13 +74,15 @@ export const Cell = styled.div<CellProps>`
 
 export const CellHighlight = styled.div<{ highlight?: boolean, y: number, x: number }>`
     position: absolute;
-    top: ${({ y }) => y - 2}px;
-    left: ${({ x }) => x - 2}px;
+    top: ${({ y }) => y - 1}px;
+    left: ${({ x }) => x - 1}px;
     width: ${createScaled(CELL_SIZE + 4)}px;
     height: ${createScaled(CELL_SIZE + 4)}px;
     box-sizing: border-box;
     background-color: transparent;
-    border: ${({ highlight }) => highlight && "4px #c11a1b solid"};
+    border-color: #c11a1b;
+    border-style: ${({ highlight }) => highlight && "solid"};
+    border-width: 4px;
 `;
 
 

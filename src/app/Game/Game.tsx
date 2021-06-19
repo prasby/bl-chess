@@ -141,14 +141,14 @@ export const Game = ({ displaySide }: Props) => {
                     </Styles.Layer>
                     <Styles.Layer>
                         {rotatedCellNumeration.map((row) => (
-                            rotatedCellNumeration.map((col) => (
-                                <Styles.CellHighlight
+                            rotatedCellNumeration.map((col) => {
+                                return <Styles.CellHighlight
                                     y={getReversedPosition(row)}
                                     x={getReversedPosition(col)}
                                     key={row + col}
                                     highlight={highlights.includes(normalizeCoord({ x: col, y: row }))}
                                 />
-                            )
+                            }
                         )))} 
                     </Styles.Layer>
                     <Styles.Layer>
