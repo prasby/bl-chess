@@ -29,7 +29,7 @@ const getPreloadedState = () => {
   return undefined;
 }
 
-const useTheme = () => {
+export const useAppTheme = () => {
   const [gameSize, setGameSize] = useState<number>(getGameSize());
   const onResize = useHandler((ev: UIEvent) => {
     setGameSize(getGameSize());
@@ -47,7 +47,7 @@ const useTheme = () => {
 const store = createApplicationStore(getPreloadedState());
 
 function App() {
-  const theme = useTheme();
+  const theme = useAppTheme();
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme} >

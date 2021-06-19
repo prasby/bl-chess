@@ -1,10 +1,12 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useHandler } from "react-use-handler";
+import { useTheme } from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import * as Styles from "./Game.styles";
 import { range } from "lodash";
+import { useAppTheme } from "src/App";
 import { resetGame, initialState, State as AppGameState, requestMotion, selectFigure, startPromotion } from "src/data/game/slice";
-import { CELL_SIZE, BOARD_PX_SIZE } from "src/utils/scale";
+import { CELL_SIZE, BOARD_PX_SIZE, scaleValue } from "src/utils/scale";
 import { RootState } from "src/data/store";
 import { BOARD_SIZE, Coordinate, getAvailableMotions, denormalizeCoord, getSide, normalizeCoord, Side, isMotionValid, getMissingFiguresToPromote, getMissingFigures } from "src/data/game/domain";
 import { SelectFigure } from "./components";
@@ -103,8 +105,9 @@ export const Game = ({ displaySide }: Props) => {
     const getEnabled = (cell: string) => {
         return getSide(cell) === gameState.activeSide && !gameState.conclusion;
     };
+    const theme = useAppTheme();
     const getReversedPosition = (pos: number) => {
-        return BOARD_PX_SIZE - (pos + 1) * CELL_SIZE;
+        return scaleValue(theme, BOARD_PX_SIZE - (pos + 1) * CELL_SIZE, true);
     };
     useEffect(() => {
         setHighlights([]);
