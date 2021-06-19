@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import * as Styles from "./Game.styles";
 import { range } from "lodash";
 import { resetGame, initialState, State as AppGameState, requestMotion, selectFigure, startPromotion } from "src/data/game/slice";
+import { CELL_SIZE, BOARD_PX_SIZE } from "src/utils/scale";
 import { RootState } from "src/data/store";
 import { BOARD_SIZE, Coordinate, getAvailableMotions, denormalizeCoord, getSide, normalizeCoord, Side, isMotionValid, getMissingFiguresToPromote, getMissingFigures } from "src/data/game/domain";
 import { SelectFigure } from "./components";
@@ -102,6 +103,9 @@ export const Game = ({ displaySide }: Props) => {
     const getEnabled = (cell: string) => {
         return getSide(cell) === gameState.activeSide && !gameState.conclusion;
     };
+    const getReversedPosition = (pos: number) => {
+        return BOARD_PX_SIZE - (pos + 1) * CELL_SIZE;
+    };
     useEffect(() => {
         setHighlights([]);
     }, [gameState]);
@@ -128,21 +132,24 @@ export const Game = ({ displaySide }: Props) => {
                             ))}
                         </Styles.Row>
                     ))}
-                    <Styles.Layer>
+                    {/* <Styles.Layer>
                         <Styles.Palac />
                         <Styles.Tron>X</Styles.Tron>
+                    </Styles.Layer> */}
+                    <Styles.Layer>
+                        <Styles.GameField src="images/pole.png" />
                     </Styles.Layer>
                     <Styles.Layer>
                         {rotatedCellNumeration.map((row) => (
-                            <Styles.Row key={row}>
-                                {rotatedCellNumeration.map((col) => (
-                                    <Styles.CellHighlight
-                                        key={row + col}
-                                        highlight={highlights.includes(normalizeCoord({ x: col, y: row }))}
-                                    />
-                                ))}
-                            </Styles.Row>
-                        ))} 
+                            rotatedCellNumeration.map((col) => (
+                                <Styles.CellHighlight
+                                    y={getReversedPosition(row)}
+                                    x={getReversedPosition(col)}
+                                    key={row + col}
+                                    highlight={highlights.includes(normalizeCoord({ x: col, y: row }))}
+                                />
+                            )
+                        )))} 
                     </Styles.Layer>
                     <Styles.Layer>
                         {gameState.field.map((cell, i) => {

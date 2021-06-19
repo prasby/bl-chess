@@ -25,20 +25,20 @@ export const TRON_ROW = 4;
 export const TRON_POSITION = TRON_ROW * BOARD_SIZE + TRON_ROW;
 
 export const figuresToIcons: { [key: string]: string } = {
-    wr: "\u2659",
-    wg: "\u2657",
-    wv: "\u2658",
-    wl: "\u2656",
-    wgt: "\u2660",
-    wkc: "\u2655",
-    wkz: "\u2654",
-    br: "\u2659",
-    bg: "\u2657",
-    bv: "\u2658",
-    bl: "\u2656",
-    bgt: "\u2660",
-    bkc: "\u2655",
-    bkz: "\u2654",
+    wr: "ratnik-b",
+    wg: "tur-b",
+    wv: "vouk-b",
+    wl: "laddzia-b",
+    wgt: "getman-b",
+    wkc: "kniazhyc-b",
+    wkz: "kniaz-b",
+    br: "ratnik-c",
+    bg: "tur-c",
+    bv: "vouk-c",
+    bl: "laddzia-c",
+    bgt: "getman-c",
+    bkc: "kniazhyc-c",
+    bkz: "kniaz-c",
 };
 
 export const normalGame = flatMap([

@@ -100,9 +100,9 @@ export const FigureRenderer = ({
             white={white}
             enabled={enabled}
         >
-            <Styles.FigureIcon white={white}>
-                {figuresToIcons[cell.split("-")[0]]}
-            </Styles.FigureIcon>
+            <Styles.FigureImage
+                src={`images/figures/${figuresToIcons[cell.split("-")[0]]}.png`}
+            />
         </Styles.Figure>
     );
 };

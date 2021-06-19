@@ -22,7 +22,7 @@ export const Figure = styled.div<{ white: boolean; enabled: boolean }>`
     width: ${createScaled(CELL_SIZE - 10)}px;
     height: ${createScaled(CELL_SIZE - 10)}px;
     border-radius: ${createScaled(CELL_SIZE / 2)}px;
-    background-color: ${({ white }) => white ? "white" : "black"};
+    background-color: transparent;
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -34,4 +34,11 @@ export const FigureIcon = styled.div<{ white: boolean }>`
     user-select: none;
     pointer-events: none;
     margin-bottom: ${createScaled(10)}px;
+`;
+
+export const FigureImage = styled.img`
+    user-select: none;
+    pointer-events: none;
+    width: ${createScaled(64)}px;
+    height: ${createScaled(64)}px;
 `;

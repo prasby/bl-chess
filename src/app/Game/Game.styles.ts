@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { Aquedux } from "aquedux";
 import { BOARD_SIZE } from "src/data/game/domain";
-import { createScaled, MAX_GAME_SIZE, CELL_SIZE, LEGEND_SIZE } from "src/utils/scale";
+import { createScaled, MAX_GAME_SIZE, CELL_SIZE, LEGEND_SIZE, BOARD_PX_SIZE } from "src/utils/scale";
 
 const cellSize = createScaled(CELL_SIZE);
 const boardSize = createScaled(BOARD_SIZE * CELL_SIZE);
@@ -68,15 +68,19 @@ export const Cell = styled.div<CellProps>`
     width: ${cellSize}px;
     height: ${cellSize}px;
     box-sizing: border-box;
-    background-color: ${({ white }) => white === true ? "#AAA" : "#555"};
+    /* background-color: ${({ white }) => white === true ? "#AAA" : "#555"}; */
+    background-color: transparent;
 `;
 
-export const CellHighlight = styled.div<{ highlight?: boolean }>`
-    width: ${cellSize}px;
-    height: ${cellSize}px;
+export const CellHighlight = styled.div<{ highlight?: boolean, y: number, x: number }>`
+    position: absolute;
+    top: ${({ y }) => y - 2}px;
+    left: ${({ x }) => x - 2}px;
+    width: ${createScaled(CELL_SIZE + 4)}px;
+    height: ${createScaled(CELL_SIZE + 4)}px;
     box-sizing: border-box;
     background-color: transparent;
-    border: ${({ highlight }) => highlight && "3px red solid"};
+    border: ${({ highlight }) => highlight && "4px #c11a1b solid"};
 `;
 
 
@@ -111,6 +115,11 @@ export const Layer = styled.div`
     top: 0;
     left: 0;
     background-color: transparent;
+`;
+
+export const GameField = styled.img`
+    width: ${createScaled(BOARD_PX_SIZE)}px;
+    height: ${createScaled(BOARD_PX_SIZE)}px;
 `;
 
 export const NotificationsLayer = styled(Layer)<{ isEnabled: boolean }>`
