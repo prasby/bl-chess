@@ -96,6 +96,16 @@ export const Palac = styled.div`
     box-sizing: border-box;
 `;
 
+export const FieldBorder = styled.div`
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: ${createScaled(CELL_SIZE * 9 + 2)}px;
+    height: ${createScaled(CELL_SIZE * 9 + 2)}px;
+    border: 2px black solid;
+    box-sizing: border-box;
+`;
+
 export const Tron = styled.div`
     position: absolute;
     left: ${createScaled(CELL_SIZE * 4)}px;
@@ -120,6 +130,7 @@ export const Layer = styled.div`
 `;
 
 export const GameField = styled.img`
+    user-select: none;
     width: ${createScaled(BOARD_PX_SIZE)}px;
     height: ${createScaled(BOARD_PX_SIZE)}px;
 `;

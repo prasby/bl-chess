@@ -359,7 +359,7 @@ const kniazhych: FigureStrategy = (board, figuresMoved, coord, checkAttack) => {
             }
         }
     }
-    const tronPolicy = kniazInPalac ? TronPolicy.STEP : TronPolicy.SKIP;
+    const tronPolicy = (kniazInPalac || checkAttack) ? TronPolicy.STEP : TronPolicy.SKIP;
     return [
         ...laddzia(2, tronPolicy)(board, figuresMoved, coord, checkAttack),
         ...garmata(2, tronPolicy)(board, figuresMoved, coord, checkAttack),

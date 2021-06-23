@@ -135,12 +135,13 @@ export const Game = ({ displaySide }: Props) => {
                             ))}
                         </Styles.Row>
                     ))}
-                    {/* <Styles.Layer>
-                        <Styles.Palac />
-                        <Styles.Tron>X</Styles.Tron>
-                    </Styles.Layer> */}
                     <Styles.Layer>
                         <Styles.GameField src="images/pole.png" />
+                    </Styles.Layer>
+                    <Styles.Layer>
+                        <Styles.FieldBorder />
+                        <Styles.Palac />
+                        {/* <Styles.Tron>X</Styles.Tron> */}
                     </Styles.Layer>
                     <Styles.Layer>
                         {rotatedCellNumeration.map((row) => (
